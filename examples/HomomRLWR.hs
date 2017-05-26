@@ -66,6 +66,33 @@ type N22 = 'TN.S N21
 type N23 = 'TN.S N22
 type N24 = 'TN.S N23
 
+type RescaleZqs = '[
+  '(Z1 , N5, 'Units N5), -- 0
+  '(Z1 , N5, 'Units N5), -- 1
+  '(Z1 , N5, 'Units N5), -- 2
+  '(Z1 , N5, 'Units N5), -- 3
+  '(Z1 , N5, 'Units N5), -- 4
+  '(Z1 , N5, 'Units N5), -- 5
+  '(Z2 , N5, 'Units N8), -- 6
+  '(Z2 , N5, 'Units N8), -- 7
+  '(Z2 , N5, 'Units N8), -- 8
+  '(Z3 , N5, 'Units N11), -- 9
+  '(Z3 , N5, 'Units N11), -- 10
+  '(Z3 , N5, 'Units N11), -- 11
+  '(Z4 , N5, 'Units N14)]{-, -- 12
+  '(Z4 , N5, 'Units N14), -- 13
+  '(Z4 , N5, 'Units N14), -- 14
+  '(Z5 , N5, 'Units N19), -- 15
+  '(Z5 , N5, 'Units N19), -- 16
+  '(Z5 , N5, 'Units N19), -- 17
+  '(Z5 , N5, 'Units N19), -- 18
+  '(Z5 , N5, 'Units N19), -- 19
+  '(Z6 , N5, 'Units N24), -- 20
+  '(Z6 , N5, 'Units N24), -- 21
+  '(Z6 , N5, 'Units N24), -- 22
+  '(Z6 , N5, 'Units N24), -- 23
+  '(Z6 , N5, 'Units N24)] -- 24-}
+
 type Zqs = '[
   '(Z1 , N5, 'Units N5), -- 0
   '(Z1 , N5, 'Units N5), -- 1
@@ -86,12 +113,12 @@ type Zqs = '[
   '(Z5 , N5, 'Units N19), -- 16
   '(Z5 , N5, 'Units N19), -- 17
   '(Z5 , N5, 'Units N19), -- 18
-  '(Z5 , N5, 'Units N19), -- 19
+  '(Z5 , N5, 'Units N19)]{-, -- 19
   '(Z6 , N5, 'Units N24), -- 20
   '(Z6 , N5, 'Units N24), -- 21
   '(Z6 , N5, 'Units N24), -- 22
   '(Z6 , N5, 'Units N24), -- 23
-  '(Z6 , N5, 'Units N24)] -- 24
+  '(Z6 , N5, 'Units N24)] -- 24-}
 
 -- k = 4 => PN N9
 -- k = 3 => PN N6
@@ -107,7 +134,7 @@ main = do
 
   -- EAC: can remove type sig and use ptexpr as the argument to pt2ct below (which infers the signature),
   -- but this requires compiling PT2CT which takes a long time.
-  let (ptrescale :: PT2CT' RescaleM'Map Zqs Gad _, paramsexpr1) = dup $ untag $ rescaleTreePow2_ @(PNoiseTag ('PN N0) (Cyc CT H5 (ZqBasic PP2 Int64))) @K
+  let (ptrescale :: PT2CT' RescaleM'Map RescaleZqs Gad _, paramsexpr1) = dup $ untag $ rescaleTreePow2_ @(PNoiseTag ('PN N0) (Cyc CT H5 (ZqBasic PP2 Int64))) @K
   putStrLn $ "PT expression params:\n" ++ params ptrescale paramsexpr1
 
 
