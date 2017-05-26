@@ -72,11 +72,11 @@ type Zqs = '[ '(Zq 268440577,                               N4, 'Units N4),   --
               '(Zq 268440577,                               N4, 'Units N4),   -- 2 units
               '(Zq 268440577,                               N4, 'Units N4),   -- 3 units
               '(Zq 268440577,                               N4, 'Units N4),   -- 4 units
-              '((Zq 8392193,Zq 268440577),                  N4, 'Units N4),   -- 5 units
-              '((Zq 8392193,Zq 268440577),                  N4, 'Units N4),   -- 6 units
+              '((Zq 8392193,Zq 268440577),                  N4, 'Units N7),   -- 5 units
+              '((Zq 8392193,Zq 268440577),                  N4, 'Units N7),   -- 6 units
               '((Zq 8392193,Zq 268440577),                  N4, 'Units N7),   -- 7 units
-              '((Zq 1073750017, (Zq 8392193,Zq 268440577)), N4, 'Units N7),   -- 8 units
-              '((Zq 1073750017, (Zq 8392193,Zq 268440577)), N4, 'Units N7),   -- 9 units
+              '((Zq 1073750017, (Zq 8392193,Zq 268440577)), N4, 'Units N11),   -- 8 units
+              '((Zq 1073750017, (Zq 8392193,Zq 268440577)), N4, 'Units N11),   -- 9 units
               '((Zq 1073750017, (Zq 8392193,Zq 268440577)), N4, 'Units N11),  -- 10 units
               '((Zq 1073750017, (Zq 8392193,Zq 268440577)), N4, 'Units N11)]  -- 11 units
 
