@@ -48,21 +48,11 @@ import Control.Monad.Reader
 import Control.Monad.State
 import Control.Monad.Writer
 import Data.Type.Natural hiding (Nat(S))
+import qualified Data.Type.Natural as TN
 
-type K = P2
+type K = P3
 type Gad = TrivGad
 type RescaleM'Map = '[ '(H5,H5)]
-
-type Zq1 = Zq $(mkTLNatNat 1520064001) -- last mul: > 2^30.5
-type Zq2 = Zq $(mkTLNatNat 3144961)    -- 3 rounding muls: > 2^19
-type Zq3 = Zq $(mkTLNatNat 5241601)
-type Zq4 = Zq $(mkTLNatNat 7338241)
-type Zq5 = Zq $(mkTLNatNat 1522160641) -- fit 5 hops: > (last mul)
-type Zq6 = Zq $(mkTLNatNat 1529498881) -- extra for KS: big
---type Zq7 = Zq $(mkTLNatNat 12579841)
-type ZqList = '[Zq1,Zq2,Zq3,Zq4,Zq5,Zq6] --,Zq7]
-
-type RescaleZqs = '[Zq1,Zq2,Zq3,Zq4,Zq5]
 
 type Z1 = Zq 1520064001
 type Z2 = (Zq 3144961, Z1)
@@ -71,6 +61,10 @@ type Z4 = (Zq 7338241, Z3)
 type Z5 = (Zq 1522160641, Z4)
 type Z6 = (Zq 1529498881, Z5)
 
+type N21 = 'TN.S N20
+type N22 = 'TN.S N21
+type N23 = 'TN.S N22
+type N24 = 'TN.S N23
 
 type Zqs = '[
   '(Z1 , N5, 'Units N5), -- 0
@@ -99,6 +93,10 @@ type Zqs = '[
   '(Z6 , N5, 'Units N24), -- 23
   '(Z6 , N5, 'Units N24)] -- 24
 
+-- k = 4 => PN N9
+-- k = 3 => PN N6
+-- k = 2 => PN N3
+
 main :: IO ()
 main = do
 
@@ -109,7 +107,7 @@ main = do
 
   -- EAC: can remove type sig and use ptexpr as the argument to pt2ct below (which infers the signature),
   -- but this requires compiling PT2CT which takes a long time.
-  let (ptrescale :: PT2CT' RescaleM'Map RescaleZqs Gad _, paramsexpr1) = dup $ untag $ rescaleTreePow2_ @(PNoiseTag ('PN N0) (Cyc CT H5 (ZqBasic PP2 Int64))) @K
+  let (ptrescale :: PT2CT' RescaleM'Map Zqs Gad _, paramsexpr1) = dup $ untag $ rescaleTreePow2_ @(PNoiseTag ('PN N0) (Cyc CT H5 (ZqBasic PP2 Int64))) @K
   putStrLn $ "PT expression params:\n" ++ params ptrescale paramsexpr1
 
 
@@ -122,7 +120,7 @@ main = do
   -- EAC: This needs to have a non-zero output pNoise level!!
   -- EAC: can remove type sig and use ptexpr as the argument to pt2ct below (which infers the signature),
   -- but this requires compiling PT2CT which takes a long time.
-  let (pttunnel :: PT2CT' CTRngs ZqList Gad _, paramsexpr2) = dup $ linear5 @CT @PTRngs @(Z2E K) @(PNoiseTag ('PN N9)) Proxy
+  let (pttunnel :: PT2CT' CTRngs Zqs Gad _, paramsexpr2) = dup $ linear5 @CT @PTRngs @(Z2E K) @(PNoiseTag ('PN N6)) Proxy
   putStrLn $ "PT expression params:\n" ++ params pttunnel paramsexpr2
 
   putStrLn $ "PT Composition: " ++ pprint (ex01 .: ex11)
