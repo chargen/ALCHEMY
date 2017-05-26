@@ -40,7 +40,7 @@ import Crypto.Lol.Cyclotomic.Tensor.CPP
 import Control.Applicative
 import Control.Monad.Random
 import Data.Maybe
-import Data.Type.Natural (Nat (Z))
+import Data.Type.Natural
 
 -- EAC: We can get rid of signatures once #13524 is fixed (should be in 8.2)
 
@@ -64,14 +64,22 @@ addMul = lam $ lam $ (lam $ v0 +: v0) $: (v1 +: v0)
 -}
 type M = F512
 type M'Map = '[ '(F4, M) ]
-type Zqs = '[Zq $(mkTLNatNat 268440577), Zq $(mkTLNatNat 8392193), Zq $(mkTLNatNat 1073750017)] -- ,1073753089)]
-{-
-type Zqs = '[ '(Zq 268440577,N4,N4),  -- pNoise 0
-              '(,,),  -- pNoise 1
-              '(,,),  -- pNoise 2
-              '(,,),  -- pNoise 3
-              '(,,) ] -- pNoise 4
--}
+--type Zqs = '[Zq $(mkTLNatNat 268440577), Zq $(mkTLNatNat 8392193), Zq $(mkTLNatNat 1073750017)] -- ,1073753089)]
+
+           -- indexed by Units: '(Mod :: *, MaxUnits :: Nat, TotalUnits :: Units)
+type Zqs = '[ '(Zq 268440577,                               N4, 'Units N4),   -- 0 units
+              '(Zq 268440577,                               N4, 'Units N4),   -- 1 units
+              '(Zq 268440577,                               N4, 'Units N4),   -- 2 units
+              '(Zq 268440577,                               N4, 'Units N4),   -- 3 units
+              '(Zq 268440577,                               N4, 'Units N4),   -- 4 units
+              '((Zq 8392193,Zq 268440577),                  N4, 'Units N4),   -- 5 units
+              '((Zq 8392193,Zq 268440577),                  N4, 'Units N4),   -- 6 units
+              '((Zq 8392193,Zq 268440577),                  N4, 'Units N7),   -- 7 units
+              '((Zq 1073750017, (Zq 8392193,Zq 268440577)), N4, 'Units N7),   -- 8 units
+              '((Zq 1073750017, (Zq 8392193,Zq 268440577)), N4, 'Units N7),   -- 9 units
+              '((Zq 1073750017, (Zq 8392193,Zq 268440577)), N4, 'Units N11),  -- 10 units
+              '((Zq 1073750017, (Zq 8392193,Zq 268440577)), N4, 'Units N11)]  -- 11 units
+
   -- @'[Zq $(mkTLNatNat 1312235009), Zq $(mkTLNatNat 37633) ] -- (still) fails with TrivGad
   -- @'[Zq $(mkTLNatNat 268440577), Zq $(mkTLNatNat 36353)]
    --, Zq $(mkTLNatNat 36353), Zq $(mkTLNatNat 37633) ] --  (still) fails with TrivGad

@@ -10,7 +10,7 @@
 {-# LANGUAGE PolyKinds                  #-}
 {-# LANGUAGE RankNTypes                 #-}
 {-# LANGUAGE ScopedTypeVariables        #-}
-{-# LANGUAGE TemplateHaskell            #-}
+--{-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE TypeApplications           #-}
 {-# LANGUAGE TypeFamilies               #-}
 {-# LANGUAGE TypeOperators              #-}
@@ -22,23 +22,22 @@
 module Crypto.Alchemy.Interpreter.PT2CT.Noise
 ( PNoise(..)--, PNoise2Nat
 , Units(..)--,  Units2Nat
-, (:+)
-, PNoiseTag(..),ZqPairsWithUnits, TotalUnits, MaxUnits
-, TLNatNat, mkTLNatNat) where
+, (:+), NatToLit, Units2Nat
+, PNoiseTag(..),ZqPairsWithUnits, TotalUnits, MaxUnits) where
 
 import           Algebra.Additive          as Additive (C)
 import           Algebra.Ring              as Ring (C)
-import           Data.Functor.Trans.Tagged
-import           Data.Singletons.Prelude   hiding ((:<), (:+))
-import           Data.Singletons.Prelude.List (Sum, Maximum)
-import           Data.Singletons.TH        hiding ((:<))
+--import           Data.Functor.Trans.Tagged
+--import           Data.Singletons.Prelude   hiding ((:<), (:+))
+--import           Data.Singletons.Prelude.List (Sum, Maximum)
+--import           Data.Singletons.TH        hiding ((:<))
 import           Data.Type.Natural         hiding ((:+))
-import qualified GHC.TypeLits              as TL (Nat)
+--import qualified GHC.TypeLits              as TL (Nat)
 import           GHC.TypeLits              hiding (Nat)
-import           Language.Haskell.TH
+--import           Language.Haskell.TH
 
-import Crypto.Lol.Reflects
-import Crypto.Lol.Types.Unsafe.ZqBasic
+--import Crypto.Lol.Reflects
+--import Crypto.Lol.Types.Unsafe.ZqBasic
 
 -- | A value tagged by @pNoise =~ -log(noise rate)@.
 newtype PNoise = PN Nat
@@ -66,7 +65,7 @@ newtype PNoiseTag (p :: PNoise) a = PTag {unPTag :: a}
 instance Applicative (PNoiseTag h) where
   pure = PTag
   (PTag f) <*> (PTag a) = PTag $ f a
-
+{-
 -- CJP: why should this be defined here?
 type family Modulus zq :: k
 type instance Modulus (ZqBasic q i) = q
@@ -111,6 +110,20 @@ singletons [d|
                -- this should be caught by the PNoise2ZqError type family
                error "prefixLen: threshold is larger than sum of list entries"
            |]
+-}
+
+type family First a where
+  First '(a,b,c) = a
+
+type family Second a where
+  Second '(a,b,c) = b
+
+type family Third a where
+  Third '(a,b,c) = c
+
+type family (!!) xs (i :: Nat) where
+  (x ': xs) !! 'Z = x
+  (x ': xs) !! ('S n) = xs !! n
 
 type family NatToLit x where
   NatToLit 'Z = 0
@@ -118,22 +131,25 @@ type family NatToLit x where
 
 -- | The number of noise units of the largest modulus among the first
 -- of those that in total have at least @h@ units.
-type MaxUnits zqs (h :: Units) = Maximum (MapNatOf (MapModulus (ZqsWithUnits zqs h)))
+type MaxUnits (zqs :: [(*,Nat,Units)]) (h :: Units) = Second (zqs !! (Units2Nat h))
+  -- Maximum (MapNatOf (MapModulus (ZqsWithUnits zqs h)))
 
 -- | For a list of moduli @zqs@, nested pairs representing moduli that
 -- have a total of at least @h@ units.
-type ZqPairsWithUnits zqs (h :: Units) = List2Pairs (ZqsWithUnits zqs h)
-
+type ZqPairsWithUnits (zqs :: [(*,Nat,Units)]) (h :: Units) = First (zqs !! (Units2Nat h))
+  -- List2Pairs (ZqsWithUnits zqs h)
+{-
 -- | For a list of moduli @zqs@, a list representing moduli that have
 -- a total of at least @h@ units.
 type ZqsWithUnits zqs (h :: Units) =
   ZqsWithUnits' ((Units2Nat h) :<= (Sum (MapNatOf (MapModulus zqs)))) h zqs
-
+-}
 -- | The total noise units among the first of the moduli having at
 -- least @h@ units.
-type TotalUnits zqs (h :: Units) = 'Units (Sum (MapNatOf (MapModulus (ZqsWithUnits zqs h))))
+type TotalUnits (zqs :: [(*,Nat,Units)]) (h :: Units) = Third (zqs !! (Units2Nat h))
+  -- 'Units (Sum (MapNatOf (MapModulus (ZqsWithUnits zqs h))))
 
-
+{-
 type family ZqsWithUnits' b (h :: Units) zqs where
   ZqsWithUnits' 'True ('Units h) zqs = Take (PrefixLen (MapNatOf (MapModulus zqs)) h) zqs
   -- error case
@@ -166,3 +182,4 @@ mkTLNatNat q =
 
 instance (Reflects x i) => Reflects ('NN x y) i where
   value = retag $ value @x
+-}

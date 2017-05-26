@@ -17,7 +17,7 @@
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 module Crypto.Alchemy.Interpreter.PT2CT
-( PT2CT, PNoiseTag
+( PT2CT, PNoiseTag, PNoise2Zq
 , pt2ct, encrypt, decrypt
 , KSPNoise
 ) where
@@ -51,7 +51,8 @@ import Crypto.Alchemy.MonadAccumulator
 -- types should have the form 'PNoiseTag h (Cyc t m zp)'.
 newtype PT2CT
   m'map    -- | list (map) of (plaintext index m, ciphertext index m')
-  zqs      -- | list of pairwise coprime Zq components for ciphertexts
+  zqs      -- | list of triples of the form (modulus q, maxUnits(q), totalUnits(q)
+           --   where the moduli are pairwise coprime Zq components for ciphertexts
   gad      -- | gadget type for key-switch hints
   z        -- | integral type for secret keys
   ctex     -- | interpreter of ciphertext operations
@@ -140,7 +141,7 @@ type PNoise2KSZq gad zqs p = ZqPairsWithUnits zqs (PNoise2Units (KSPNoise gad zq
 
 -- | pNoise of a key-switch hint for a particular gadget, given the
 -- pNoise of the input ciphertext.
-type family KSPNoise gad (zqs :: [*]) (p :: PNoise) :: PNoise -- PNoise to PNoise
+type family KSPNoise gad (zqs :: [(*,Nat,Units)]) (p :: PNoise) :: PNoise -- PNoise to PNoise
 -- EAC: FIXME: we are adding "units" to a PNoise here, not sure if that's what you meant.
 -- For simplicity, MaxUnits
 -- returns a Nat, but it should probably return Units for safety. Then we add 2
