@@ -21,8 +21,8 @@
 -- should be a hidden/internal module
 module Crypto.Alchemy.Interpreter.PT2CT.Noise
 ( PNoise(..)--, PNoise2Nat
-, Units(..)--,  Units2Nat
-, (:+), NatToLit, Units2Nat
+, Units(..), UnitsToNat
+, (:+), NatToLit
 , PNoiseTag(..),ZqPairsWithUnits, TotalUnits, MaxUnits) where
 
 import           Algebra.Additive          as Additive (C)
@@ -50,8 +50,8 @@ type family (:+) a b where
 
 newtype Units = Units Nat
 
-type family Units2Nat (u :: Units) where
-  Units2Nat ('Units h) = h
+type family UnitsToNat (u :: Units) where
+  UnitsToNat ('Units h) = h
 
 -- convenient synonym for Tagged. Useful for kind inference, and because we need
 -- the partially applied "PNoiseTag p" type, which we can't write niceyl with
@@ -131,22 +131,24 @@ type family NatToLit x where
 
 -- | The number of noise units of the largest modulus among the first
 -- of those that in total have at least @h@ units.
-type MaxUnits (zqs :: [(*,Nat,Units)]) (h :: Units) = Second (zqs !! (Units2Nat h))
+type MaxUnits (zqs :: [(*,Nat,Units)]) (h :: Units) = Second (zqs !! (UnitsToNat h))
   -- Maximum (MapNatOf (MapModulus (ZqsWithUnits zqs h)))
 
 -- | For a list of moduli @zqs@, nested pairs representing moduli that
 -- have a total of at least @h@ units.
-type ZqPairsWithUnits (zqs :: [(*,Nat,Units)]) (h :: Units) = First (zqs !! (Units2Nat h))
+type ZqPairsWithUnits (zqs :: [(*,Nat,Units)]) (h :: Units) = First (zqs !! (UnitsToNat h))
   -- List2Pairs (ZqsWithUnits zqs h)
 {-
 -- | For a list of moduli @zqs@, a list representing moduli that have
 -- a total of at least @h@ units.
 type ZqsWithUnits zqs (h :: Units) =
-  ZqsWithUnits' ((Units2Nat h) :<= (Sum (MapNatOf (MapModulus zqs)))) h zqs
+<<<<<<< HEAD
+  ZqsWithUnits' ((UnitsToNat h) :<= (Sum (MapNatOf (MapModulus zqs)))) h zqs
 -}
+
 -- | The total noise units among the first of the moduli having at
 -- least @h@ units.
-type TotalUnits (zqs :: [(*,Nat,Units)]) (h :: Units) = Third (zqs !! (Units2Nat h))
+type TotalUnits (zqs :: [(*,Nat,Units)]) (h :: Units) = Third (zqs !! (UnitsToNat h))
   -- 'Units (Sum (MapNatOf (MapModulus (ZqsWithUnits zqs h))))
 
 {-
