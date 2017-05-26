@@ -49,9 +49,7 @@ import Control.Monad.State
 import Control.Monad.Writer
 import Data.Type.Natural hiding (Nat(S))
 
-
-
-type K = P4
+type K = P2
 type Gad = TrivGad
 type RescaleM'Map = '[ '(H5,H5)]
 
@@ -65,6 +63,41 @@ type Zq6 = Zq $(mkTLNatNat 1529498881) -- extra for KS: big
 type ZqList = '[Zq1,Zq2,Zq3,Zq4,Zq5,Zq6] --,Zq7]
 
 type RescaleZqs = '[Zq1,Zq2,Zq3,Zq4,Zq5]
+
+type Z1 = Zq 1520064001
+type Z2 = (Zq 3144961, Z1)
+type Z3 = (Zq 5241601, Z2)
+type Z4 = (Zq 7338241, Z3)
+type Z5 = (Zq 1522160641, Z4)
+type Z6 = (Zq 1529498881, Z5)
+
+
+type Zqs = '[
+  '(Z1 , N5, 'Units N5), -- 0
+  '(Z1 , N5, 'Units N5), -- 1
+  '(Z1 , N5, 'Units N5), -- 2
+  '(Z1 , N5, 'Units N5), -- 3
+  '(Z1 , N5, 'Units N5), -- 4
+  '(Z1 , N5, 'Units N5), -- 5
+  '(Z2 , N5, 'Units N8), -- 6
+  '(Z2 , N5, 'Units N8), -- 7
+  '(Z2 , N5, 'Units N8), -- 8
+  '(Z3 , N5, 'Units N11), -- 9
+  '(Z3 , N5, 'Units N11), -- 10
+  '(Z3 , N5, 'Units N11), -- 11
+  '(Z4 , N5, 'Units N14), -- 12
+  '(Z4 , N5, 'Units N14), -- 13
+  '(Z4 , N5, 'Units N14), -- 14
+  '(Z5 , N5, 'Units N19), -- 15
+  '(Z5 , N5, 'Units N19), -- 16
+  '(Z5 , N5, 'Units N19), -- 17
+  '(Z5 , N5, 'Units N19), -- 18
+  '(Z5 , N5, 'Units N19), -- 19
+  '(Z6 , N5, 'Units N24), -- 20
+  '(Z6 , N5, 'Units N24), -- 21
+  '(Z6 , N5, 'Units N24), -- 22
+  '(Z6 , N5, 'Units N24), -- 23
+  '(Z6 , N5, 'Units N24)] -- 24
 
 main :: IO ()
 main = do
@@ -89,7 +122,7 @@ main = do
   -- EAC: This needs to have a non-zero output pNoise level!!
   -- EAC: can remove type sig and use ptexpr as the argument to pt2ct below (which infers the signature),
   -- but this requires compiling PT2CT which takes a long time.
-  let (pttunnel :: PT2CT' CTRngs ZqList Gad _, paramsexpr2) = dup $ linear5 @CT @PTRngs @(Z2E K) @(PNoiseTag ('PN N11)) Proxy
+  let (pttunnel :: PT2CT' CTRngs ZqList Gad _, paramsexpr2) = dup $ linear5 @CT @PTRngs @(Z2E K) @(PNoiseTag ('PN N9)) Proxy
   putStrLn $ "PT expression params:\n" ++ params pttunnel paramsexpr2
 
   putStrLn $ "PT Composition: " ++ pprint (ex01 .: ex11)
@@ -101,7 +134,7 @@ main = do
     roundTree <- timeIO "Compiling rounding tree..." $
                    argToReader (pt2ct
                     @RescaleM'Map
-                    @RescaleZqs
+                    @Zqs
                     @Gad
                     @Int64)
                     (untag $ rescaleTreePow2_ @(PNoiseTag ('PN N0) (Cyc CT H5 (ZqBasic PP2 Int64))) @K)
@@ -109,10 +142,10 @@ main = do
     tunn <- timeIO "Compiling tunnel sequence..." $
                argToReader (pt2ct
                   @CTRngs
-                  @ZqList
+                  @Zqs
                   @Gad
                   @Int64)
-                  (linear5 @CT @PTRngs @(Z2E K) @(PNoiseTag ('PN N11)) Proxy)
+                  (linear5 @CT @PTRngs @(Z2E K) @(PNoiseTag ('PN N9)) Proxy)
 
     let (r1,r)  = dup roundTree
         (r2,r') = dup r
@@ -149,8 +182,8 @@ main = do
     _ <- time "Evaluating without error rates..." $ eval (r4 .: s4) arg1
 
     liftIO $ putStrLn "Done."
--}
 
+-}
 
 
 {-
