@@ -3,6 +3,7 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeOperators #-}
 
 module Common where
@@ -40,13 +41,13 @@ argToReader f a = flip f a =<< ask
 type Zq q = ZqBasic q Int64
 
 type H0 = F128
-type H1 = F64 * F7
-type H2 = F32 * F7 * F13
-type H3 = F8 * F5 * F7 * F13
-type H4 = F4 * F3 * F5 * F7 * F13
-type H5 = F9 * F5 * F7 * F13
-type H0' = H0 * F7 * F13
-type H1' = H1 * F13
+type H1 = $(fType $ 64*7) -- F64 * F7
+type H2 = $(fType $ 32*7*13) -- F32 * F7 * F13
+type H3 = $(fType $ 8*5*7*13) -- F8 * F5 * F7 * F13
+type H4 = $(fType $ 4*3*5*7*13) -- F4 * F3 * F5 * F7 * F13
+type H5 = $(fType $ 9*5*7*13) -- F9 * F5 * F7 * F13
+type H0' = $(fType $ 128*7*13) -- H0 * F7 * F13
+type H1' = $(fType $ 64*7*13)
 type H2' = H2
 type H3' = H3
 type H4' = H4
