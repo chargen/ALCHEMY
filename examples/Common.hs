@@ -56,8 +56,7 @@ type PTRngs = '[H0,H1,H2,H3,H4,H5]
 
 type CTRngs = '[ '(H0,H0'), '(H1,H1'), '(H2,H2'), '(H3,H3'), '(H4,H4'), '(H5,H5') ]
 
-
-type PT2CT' m'map zqs gad a = PT2CT m'map zqs gad Int64 P (StateT Keys (StateT Hints (ReaderT Double IO))) () a
+type PT2CT' m'map gad a = PT2CT m'map gad Int64 P (StateT Keys (StateT Hints (ReaderT Double IO))) () a
 
 -- timing functionality
 time :: (NFData a, MonadIO m) => String -> a -> m a

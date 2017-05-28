@@ -17,7 +17,7 @@
 
 module HomomRLWR where
 
-import Crypto.Lol
+import Crypto.Lol hiding (Pos(..))
 import Crypto.Lol.Cyclotomic.Tensor.CPP
 import Crypto.Lol.Types
 
@@ -47,7 +47,7 @@ import Control.Monad.Random
 import Control.Monad.Reader
 import Control.Monad.State
 import Control.Monad.Writer
-import Data.Type.Natural hiding (Nat(S))
+import Data.Type.Natural --hiding (Nat(S))
 import qualified Data.Type.Natural as TN
 
 type K = P3
@@ -61,65 +61,76 @@ type Z4 = (Zq 7338241, Z3)
 type Z5 = (Zq 1522160641, Z4)
 type Z6 = (Zq 1529498881, Z5)
 
-type N21 = 'TN.S N20
-type N22 = 'TN.S N21
-type N23 = 'TN.S N22
-type N24 = 'TN.S N23
+type instance MaxUnits ('Units M0) = M5
+type instance MaxUnits ('Units M1) = M5
+type instance MaxUnits ('Units M2) = M5
+type instance MaxUnits ('Units M3) = M5
+type instance MaxUnits ('Units M4) = M5
+type instance MaxUnits ('Units M5) = M5
+type instance MaxUnits ('Units M6) = M5
+type instance MaxUnits ('Units M7) = M5
+type instance MaxUnits ('Units M8) = M5
+type instance MaxUnits ('Units M9) = M5
+type instance MaxUnits ('Units M10) = M5
+type instance MaxUnits ('Units M11) = M5
+type instance MaxUnits ('Units M12) = M5
+type instance MaxUnits ('Units M13) = M5
+type instance MaxUnits ('Units M14) = M5
+type instance MaxUnits ('Units M15) = M5
+type instance MaxUnits ('Units M16) = M5
+type instance MaxUnits ('Units M17) = M5
+type instance MaxUnits ('Units M18) = M5
+type instance MaxUnits ('Units M19) = M5
 
-type RescaleZqs = '[
-  '(Z1 , N5, 'Units N5), -- 0
-  '(Z1 , N5, 'Units N5), -- 1
-  '(Z1 , N5, 'Units N5), -- 2
-  '(Z1 , N5, 'Units N5), -- 3
-  '(Z1 , N5, 'Units N5), -- 4
-  '(Z1 , N5, 'Units N5), -- 5
-  '(Z2 , N5, 'Units N8), -- 6
-  '(Z2 , N5, 'Units N8), -- 7
-  '(Z2 , N5, 'Units N8), -- 8
-  '(Z3 , N5, 'Units N11), -- 9
-  '(Z3 , N5, 'Units N11), -- 10
-  '(Z3 , N5, 'Units N11), -- 11
-  '(Z4 , N5, 'Units N14)]{-, -- 12
-  '(Z4 , N5, 'Units N14), -- 13
-  '(Z4 , N5, 'Units N14), -- 14
-  '(Z5 , N5, 'Units N19), -- 15
-  '(Z5 , N5, 'Units N19), -- 16
-  '(Z5 , N5, 'Units N19), -- 17
-  '(Z5 , N5, 'Units N19), -- 18
-  '(Z5 , N5, 'Units N19), -- 19
+type instance ZqPairsWithUnits ('Units M0) = Z1
+type instance ZqPairsWithUnits ('Units M1) = Z1
+type instance ZqPairsWithUnits ('Units M2) = Z1
+type instance ZqPairsWithUnits ('Units M3) = Z1
+type instance ZqPairsWithUnits ('Units M4) = Z1
+type instance ZqPairsWithUnits ('Units M5) = Z1
+type instance ZqPairsWithUnits ('Units M6) = Z2
+type instance ZqPairsWithUnits ('Units M7) = Z2
+type instance ZqPairsWithUnits ('Units M8) = Z2
+type instance ZqPairsWithUnits ('Units M9) = Z3
+type instance ZqPairsWithUnits ('Units M10) = Z3
+type instance ZqPairsWithUnits ('Units M11) = Z3
+type instance ZqPairsWithUnits ('Units M12) = Z4
+type instance ZqPairsWithUnits ('Units M13) = Z4
+type instance ZqPairsWithUnits ('Units M14) = Z4
+type instance ZqPairsWithUnits ('Units M15) = Z5
+type instance ZqPairsWithUnits ('Units M16) = Z5
+type instance ZqPairsWithUnits ('Units M17) = Z5
+type instance ZqPairsWithUnits ('Units M18) = Z5
+type instance ZqPairsWithUnits ('Units M19) = Z5
+
+type instance TotalUnits ('Units M0) = 'Units M5 -- 0
+type instance TotalUnits ('Units M1) = 'Units M5 -- 1
+type instance TotalUnits ('Units M2) = 'Units M5 -- 2
+type instance TotalUnits ('Units M3) = 'Units M5 -- 3
+type instance TotalUnits ('Units M4) = 'Units M5 -- 4
+type instance TotalUnits ('Units M5) = 'Units M5 -- 5
+type instance TotalUnits ('Units M6) = 'Units M8 -- 6
+type instance TotalUnits ('Units M7) = 'Units M8 -- 7
+type instance TotalUnits ('Units M8) = 'Units M8 -- 8
+type instance TotalUnits ('Units M9) = 'Units M11 -- 9
+type instance TotalUnits ('Units M10) = 'Units M11 -- 10
+type instance TotalUnits ('Units M11) = 'Units M11 -- 11
+type instance TotalUnits ('Units M12) = 'Units M14 -- 12
+type instance TotalUnits ('Units M13) = 'Units M14 -- 13
+type instance TotalUnits ('Units M14) = 'Units M14 -- 14
+type instance TotalUnits ('Units M15) = 'Units M19 -- 15
+type instance TotalUnits ('Units M16) = 'Units M19 -- 16
+type instance TotalUnits ('Units M17) = 'Units M19 -- 17
+type instance TotalUnits ('Units M18) = 'Units M19 -- 18
+type instance TotalUnits ('Units M19) = 'Units M19 -- 19
+
+{-
   '(Z6 , N5, 'Units N24), -- 20
   '(Z6 , N5, 'Units N24), -- 21
   '(Z6 , N5, 'Units N24), -- 22
   '(Z6 , N5, 'Units N24), -- 23
-  '(Z6 , N5, 'Units N24)] -- 24-}
-
-type Zqs = '[
-  '(Z1 , N5, 'Units N5), -- 0
-  '(Z1 , N5, 'Units N5), -- 1
-  '(Z1 , N5, 'Units N5), -- 2
-  '(Z1 , N5, 'Units N5), -- 3
-  '(Z1 , N5, 'Units N5), -- 4
-  '(Z1 , N5, 'Units N5), -- 5
-  '(Z2 , N5, 'Units N8), -- 6
-  '(Z2 , N5, 'Units N8), -- 7
-  '(Z2 , N5, 'Units N8), -- 8
-  '(Z3 , N5, 'Units N11), -- 9
-  '(Z3 , N5, 'Units N11), -- 10
-  '(Z3 , N5, 'Units N11), -- 11
-  '(Z4 , N5, 'Units N14), -- 12
-  '(Z4 , N5, 'Units N14), -- 13
-  '(Z4 , N5, 'Units N14), -- 14
-  '(Z5 , N5, 'Units N19), -- 15
-  '(Z5 , N5, 'Units N19), -- 16
-  '(Z5 , N5, 'Units N19), -- 17
-  '(Z5 , N5, 'Units N19), -- 18
-  '(Z5 , N5, 'Units N19)]{-, -- 19
-  '(Z6 , N5, 'Units N24), -- 20
-  '(Z6 , N5, 'Units N24), -- 21
-  '(Z6 , N5, 'Units N24), -- 22
-  '(Z6 , N5, 'Units N24), -- 23
-  '(Z6 , N5, 'Units N24)] -- 24-}
-
+  '(Z6 , N5, 'Units N24)] -- 24
+-}
 -- k = 4 => PN N9
 -- k = 3 => PN N6
 -- k = 2 => PN N3
@@ -128,26 +139,26 @@ main :: IO ()
 main = do
 
   putStrLn "RescaleTree:"
-  let (ex01,ex02) = dup $ untag $ rescaleTreePow2_ @(PNoiseTag ('PN N0) (Cyc CT H5 (ZqBasic PP2 Int64))) @K
+  let (ex01,ex02) = dup $ untag $ rescaleTreePow2_ @(PNoiseTag ('PN M0) (Cyc CT H5 (ZqBasic PP2 Int64))) @K
   putStrLn $ "PT RescaleTree: " ++ pprint ex01
   putStrLn $ "PT RescaleTree size: " ++ show (size ex02)
 
   -- EAC: can remove type sig and use ptexpr as the argument to pt2ct below (which infers the signature),
   -- but this requires compiling PT2CT which takes a long time.
-  let (ptrescale :: PT2CT' RescaleM'Map RescaleZqs Gad _, paramsexpr1) = dup $ untag $ rescaleTreePow2_ @(PNoiseTag ('PN N0) (Cyc CT H5 (ZqBasic PP2 Int64))) @K
+  let (ptrescale :: PT2CT' RescaleM'Map Gad _, paramsexpr1) = dup $ untag $ rescaleTreePow2_ @(PNoiseTag ('PN M0) (Cyc CT H5 (ZqBasic PP2 Int64))) @K
   putStrLn $ "PT expression params:\n" ++ params ptrescale paramsexpr1
 
 
   putStrLn "Tunnel:"
   -- EAC: 'Z noise is important here so that we can print the composition of P expr
-  let (ex11,ex12) = dup $ linear5 @CT @PTRngs @(Z2E K) @(PNoiseTag ('PN N0)) Proxy
+  let (ex11,ex12) = dup $ linear5 @CT @PTRngs @(Z2E K) @(PNoiseTag ('PN M0)) Proxy
   putStrLn $ "PT Tunnel: " ++ pprint ex11
   putStrLn $ "PT Tunnel size: " ++ show (size ex12)
 
   -- EAC: This needs to have a non-zero output pNoise level!!
   -- EAC: can remove type sig and use ptexpr as the argument to pt2ct below (which infers the signature),
   -- but this requires compiling PT2CT which takes a long time.
-  let (pttunnel :: PT2CT' CTRngs Zqs Gad _, paramsexpr2) = dup $ linear5 @CT @PTRngs @(Z2E K) @(PNoiseTag ('PN N6)) Proxy
+  let (pttunnel :: PT2CT' CTRngs Gad _, paramsexpr2) = dup $ linear5 @CT @PTRngs @(Z2E K) @(PNoiseTag ('PN M6)) Proxy
   putStrLn $ "PT expression params:\n" ++ params pttunnel paramsexpr2
 
   putStrLn $ "PT Composition: " ++ pprint (ex01 .: ex11)
