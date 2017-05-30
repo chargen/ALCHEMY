@@ -81,6 +81,13 @@ type instance MaxUnits ('Units M16) = M5
 type instance MaxUnits ('Units M17) = M5
 type instance MaxUnits ('Units M18) = M5
 type instance MaxUnits ('Units M19) = M5
+{-
+type instance MaxUnits ('Units M20) = M5
+type instance MaxUnits ('Units M21) = M5
+type instance MaxUnits ('Units M22) = M5
+type instance MaxUnits ('Units M23) = M5
+type instance MaxUnits ('Units M24) = M5
+-}
 
 type instance ZqPairsWithUnits ('Units M0) = Z1
 type instance ZqPairsWithUnits ('Units M1) = Z1
@@ -102,35 +109,42 @@ type instance ZqPairsWithUnits ('Units M16) = Z5
 type instance ZqPairsWithUnits ('Units M17) = Z5
 type instance ZqPairsWithUnits ('Units M18) = Z5
 type instance ZqPairsWithUnits ('Units M19) = Z5
-
-type instance TotalUnits ('Units M0) = 'Units M5 -- 0
-type instance TotalUnits ('Units M1) = 'Units M5 -- 1
-type instance TotalUnits ('Units M2) = 'Units M5 -- 2
-type instance TotalUnits ('Units M3) = 'Units M5 -- 3
-type instance TotalUnits ('Units M4) = 'Units M5 -- 4
-type instance TotalUnits ('Units M5) = 'Units M5 -- 5
-type instance TotalUnits ('Units M6) = 'Units M8 -- 6
-type instance TotalUnits ('Units M7) = 'Units M8 -- 7
-type instance TotalUnits ('Units M8) = 'Units M8 -- 8
-type instance TotalUnits ('Units M9) = 'Units M11 -- 9
-type instance TotalUnits ('Units M10) = 'Units M11 -- 10
-type instance TotalUnits ('Units M11) = 'Units M11 -- 11
-type instance TotalUnits ('Units M12) = 'Units M14 -- 12
-type instance TotalUnits ('Units M13) = 'Units M14 -- 13
-type instance TotalUnits ('Units M14) = 'Units M14 -- 14
-type instance TotalUnits ('Units M15) = 'Units M19 -- 15
-type instance TotalUnits ('Units M16) = 'Units M19 -- 16
-type instance TotalUnits ('Units M17) = 'Units M19 -- 17
-type instance TotalUnits ('Units M18) = 'Units M19 -- 18
-type instance TotalUnits ('Units M19) = 'Units M19 -- 19
-
 {-
-  '(Z6 , N5, 'Units N24), -- 20
-  '(Z6 , N5, 'Units N24), -- 21
-  '(Z6 , N5, 'Units N24), -- 22
-  '(Z6 , N5, 'Units N24), -- 23
-  '(Z6 , N5, 'Units N24)] -- 24
+type instance ZqPairsWithUnits ('Units M20) = Z6
+type instance ZqPairsWithUnits ('Units M21) = Z6
+type instance ZqPairsWithUnits ('Units M22) = Z6
+type instance ZqPairsWithUnits ('Units M23) = Z6
+type instance ZqPairsWithUnits ('Units M24) = Z6
 -}
+
+type instance TotalUnits ('Units M0) = 'Units M5
+type instance TotalUnits ('Units M1) = 'Units M5
+type instance TotalUnits ('Units M2) = 'Units M5
+type instance TotalUnits ('Units M3) = 'Units M5
+type instance TotalUnits ('Units M4) = 'Units M5
+type instance TotalUnits ('Units M5) = 'Units M5
+type instance TotalUnits ('Units M6) = 'Units M8
+type instance TotalUnits ('Units M7) = 'Units M8
+type instance TotalUnits ('Units M8) = 'Units M8
+type instance TotalUnits ('Units M9) = 'Units M11
+type instance TotalUnits ('Units M10) = 'Units M11
+type instance TotalUnits ('Units M11) = 'Units M11
+type instance TotalUnits ('Units M12) = 'Units M14
+type instance TotalUnits ('Units M13) = 'Units M14
+type instance TotalUnits ('Units M14) = 'Units M14
+type instance TotalUnits ('Units M15) = 'Units M19
+type instance TotalUnits ('Units M16) = 'Units M19
+type instance TotalUnits ('Units M17) = 'Units M19
+type instance TotalUnits ('Units M18) = 'Units M19
+type instance TotalUnits ('Units M19) = 'Units M19
+{-
+type instance TotalUnits ('Units M20) = 'Units M24
+type instance TotalUnits ('Units M21) = 'Units M24
+type instance TotalUnits ('Units M22) = 'Units M24
+type instance TotalUnits ('Units M23) = 'Units M24
+type instance TotalUnits ('Units M24) = 'Units M24
+-}
+
 -- k = 4 => PN N9
 -- k = 3 => PN N6
 -- k = 2 => PN N3
@@ -147,7 +161,6 @@ main = do
   -- but this requires compiling PT2CT which takes a long time.
   let (ptrescale :: PT2CT' RescaleM'Map Gad _, paramsexpr1) = dup $ untag $ rescaleTreePow2_ @(PNoiseTag ('PN M0) (Cyc CT H5 (ZqBasic PP2 Int64))) @K
   putStrLn $ "PT expression params:\n" ++ params ptrescale paramsexpr1
-
 
   putStrLn "Tunnel:"
   -- EAC: 'Z noise is important here so that we can print the composition of P expr
