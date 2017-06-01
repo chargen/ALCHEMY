@@ -21,23 +21,15 @@
 -- should be a hidden/internal module
 module Crypto.Alchemy.Interpreter.PT2CT.Noise
 ( PNoise(..), (:+), Units(..)
-, NatToLit, mkTypeNat
+, NatToLit, natType, natDec
 , pNoiseUnit, PNoiseTag(..)
-, ZqPairsWithUnits, TotalUnits, MaxUnits) where
+, UnitsToModulus, TotalUnits) where
 
-import           Algebra.Additive          as Additive (C)
-import           Algebra.Ring              as Ring (C)
---import           Data.Functor.Trans.Tagged
---import           Data.Singletons.Prelude   hiding ((:<), (:+))
---import           Data.Singletons.Prelude.List (Sum, Maximum)
---import           Data.Singletons.TH        hiding ((:<))
-import           Data.Type.Natural         hiding ((:+))
---import qualified GHC.TypeLits              as TL (Nat)
-import           GHC.TypeLits              hiding (Nat)
-import           Language.Haskell.TH
-
---import Crypto.Lol.Reflects
---import Crypto.Lol.Types.Unsafe.ZqBasic
+import Algebra.Additive    as Additive (C)
+import Algebra.Ring        as Ring (C)
+import Data.Type.Natural   hiding ((:+))
+import GHC.TypeLits        hiding (Nat)
+import Language.Haskell.TH
 
 -- | "Bits" per noise unit.
 pNoiseUnit :: Double
@@ -57,45 +49,36 @@ type family (:+) a b where
 -- value from @PNoise@.
 newtype Units = Units Nat
 
--- internal only: type destructor for Units
-type family UnitsToNat (u :: Units) where
-  UnitsToNat ('Units h) = h
-
 -- convenient synonym for Tagged. Useful for kind inference, and because we need
--- the partially applied "PNoiseTag p" type, which we can't write niceyl with
--- 'Tagged' because it is in fact a type synonym
+-- the partially applied "PNoiseTag p" type, which we can't write nicely with
+-- 'Tagged' because it is in fact a type synonym.
 -- | A value tagged by @pNoise =~ -log(noise rate)@.
 newtype PNoiseTag (p :: PNoise) a = PTag {unPTag :: a}
-  -- EAC: Okay to derive Functor and Applicative? It makes life easier because
-  -- we can define a single instance (e.g., of E) rather than one for Identity
-  -- and one for (PNoise h)
   deriving (Additive.C, Ring.C, Functor, Show)
 
 instance Applicative (PNoiseTag h) where
   pure = PTag
   (PTag f) <*> (PTag a) = PTag $ f a
 
+-- | Convert a type natural to a TypeLit for nicer (type) error messages
 type family NatToLit x where
   NatToLit 'Z = 0
   NatToLit ('S n) = 1 + (NatToLit n)
 
--- | The number of noise units of the largest modulus among the first
--- of those that in total have at least @h@ units.
-type family MaxUnits (h :: Units) :: Nat
-  -- Maximum (MapNatOf (MapModulus (ZqsWithUnits zqs h)))
+-- | A (nested pair of) modulus(i) having at least @h@ units, where a unit
+-- is defined by the @pNoiseUnit@.
+-- EAC: Add comment about generating with TH.
+type family UnitsToModulus (h :: Units)
 
--- | For a list of moduli @zqs@, nested pairs representing moduli that
--- have a total of at least @h@ units.
-type family ZqPairsWithUnits (h :: Units)
-  -- List2Pairs (ZqsWithUnits zqs h)
-
-
--- | The total noise units among the first of the moduli having at
--- least @h@ units.
+-- | The total noise units of the modulus @UnitsToModulus h@.
+-- EAC: Add comment about generating with TH.
 type family TotalUnits (h :: Units) :: Units
 
 -- | Template Haskell splice to construct a Nat from an Int
-mkTypeNat :: Int -> TypeQ
-mkTypeNat x | x < 0 = error $ "mkTypeNat: negative argument " ++ show x
-mkTypeNat 0 = conT 'Z
-mkTypeNat x = conT 'S `appT` (mkTypeNat $ x-1)
+natType :: Int -> TypeQ
+natType x | x < 0 = error $ "natType: negative argument " ++ show x
+natType 0 = conT 'Z
+natType x = conT 'S `appT` (natType $ x-1)
+
+natDec :: Int -> DecQ
+natDec x = tySynD (mkName $ "N" ++ show x) [] $ natType x

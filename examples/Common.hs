@@ -19,12 +19,18 @@ import Control.Monad.State
 import Crypto.Alchemy.Interpreter.KeysHints
 import Crypto.Alchemy.Interpreter.Print
 import Crypto.Alchemy.Interpreter.PT2CT
+import Crypto.Alchemy.Interpreter.PT2CT.Noise
 import Crypto.Lol
 import Crypto.Lol.Types
 
 import Data.Time.Clock
 import System.IO
 import Text.Printf
+
+-- | Replacements for the N* type families exported from Data.Type.Natural.
+-- We need to index type families with type naturals; the TH splice defines
+-- the values directly, without using type families.
+$(mapM natDec [0..30])
 
 -- a concrete Z_2^e data type
 type Z2E e = ZqBasic ('PP '(Prime2, e)) Int64
