@@ -19,15 +19,10 @@ module HomomRLWR where
 
 import Crypto.Lol
 import Crypto.Lol.Cyclotomic.Tensor.CPP
-import Crypto.Lol.Types
 
 import Common
 import LinearDec2CRT
-import RescaleTree
 
-import Crypto.Alchemy.MonadAccumulator
---import Crypto.Alchemy.Interpreter.DedupRescale
-import Crypto.Alchemy.Interpreter.Depth
 import Crypto.Alchemy.Interpreter.Dup
 import Crypto.Alchemy.Interpreter.ErrorRateWriter
 import Crypto.Alchemy.Interpreter.Eval
@@ -38,17 +33,14 @@ import Crypto.Alchemy.Interpreter.PT2CT
 import Crypto.Alchemy.Interpreter.PT2CT.Noise
 import Crypto.Alchemy.Interpreter.RescaleTree
 import Crypto.Alchemy.Interpreter.Size
-import Crypto.Alchemy.Language.Arithmetic
 import Crypto.Alchemy.Language.Lambda hiding (s)
-import Crypto.Alchemy.Language.LinearCyc
+import Crypto.Alchemy.MonadAccumulator
 
 import Control.Monad.Random
-import Control.Monad.State
 import Control.Monad.Writer
 
 type K = P3
 type Gad = TrivGad
-type RescaleM'Map = '[ '(H5,H5)]
 
 type Z1 = Zq 1520064001
 type Z2 = (Zq 3144961, Z1)
@@ -149,8 +141,8 @@ main = do
                     @CTRngs
                     @Gad
                     @Int64)
-                    --ptrlwr
-                    (dup $ untag $ homomRLWR_5hop @CT @PTRngs @K @(PNoiseTag ('PN N0)) Proxy)
+                    --ptrlwr -- see comment above
+                    (untag $ homomRLWR_5hop @CT @PTRngs @K @(PNoiseTag ('PN N0)) Proxy)
 
     let (r1,r)  = dup rlwr
         (r2,s)  = dup r
