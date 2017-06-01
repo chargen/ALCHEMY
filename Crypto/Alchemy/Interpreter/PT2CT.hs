@@ -8,6 +8,7 @@
 {-# LANGUAGE NoImplicitPrelude      #-}
 {-# LANGUAGE PartialTypeSignatures  #-}
 {-# LANGUAGE ScopedTypeVariables    #-}
+{-# LANGUAGE TemplateHaskell        #-}
 {-# LANGUAGE TypeApplications       #-}
 {-# LANGUAGE TypeFamilies           #-}
 {-# LANGUAGE TypeFamilyDependencies #-}
@@ -70,7 +71,7 @@ pt2ct :: forall m'map gad z e ctex a mon .
            -- keys/errors.  (Scaled variance over \( R^\vee \) is \( r
            -- / \sqrt{\varphi(m')} \).)
   -> PT2CT m'map gad z ctex (ReaderT Double mon) e a -- | plaintext expression
-  -> mon (ctex (Cyc2CT m'map e) (Cyc2CT m'map a)) -- | (monadic) ctex expression
+  -> mon (ctex (Cyc2CT m'map e) (Cyc2CT m'map a))    -- | (monadic) ctex expression
 pt2ct r = flip runReaderT r . unPC
 
 svar :: (Fact m') => Proxy m' -> Double -> Double
@@ -136,37 +137,32 @@ instance (SHE ctex, Applicative mon,
   MulLit (PT2CT m'map gad z ctex mon) (PNoiseTag h (Cyc t m zp)) where
 
   mulLit_ (PTag a) = PC $ pure $ mulPublic_ a
--- EAC: BUG!/FIXME
--- Previously: ZqPairsWithUnits (KSPNoise gad (PNoise2Units p))
-type PNoise2KSZq gad p = ZqPairsWithUnits (PNoise2Units (KSPNoise gad p))
 
+type PNoise2KSZq gad p = ZqPairsWithUnits (KSPNoise2Units (KSPNoise gad p))
+
+
+-- The pNoise for the key-switch hint depends on the gadget:
 -- | pNoise of a key-switch hint for a particular gadget, given the
 -- pNoise of the input ciphertext.
-type family KSPNoise gad (p :: PNoise) :: PNoise -- PNoise to PNoise
--- EAC: FIXME: we are adding "units" to a PNoise here, not sure if that's what you meant.
--- For simplicity, MaxUnits
--- returns a Nat, but it should probably return Units for safety. Then we add 2
--- to Units to get Units, and then we try to add a PNoise, which should be an error.
-type instance KSPNoise TrivGad      p = p :+ (M2 :+: MaxUnits (PNoise2Units p))
-type instance KSPNoise (BaseBGad 2) p = p :+ M2
-
--- The pNoise for the key-switch hint depends on the gadget, so we define
--- gadget-specifc instances of Mul below
+type family KSPNoise gad (p :: PNoise) :: PNoise
+-- For TrivGad: key switching decreases pNoise by ~KSAccumPNoise,
+-- coefficients for TrivGad are <= Max32BitUnits units (assuming all moduli are < 32 bits)
+type instance KSPNoise TrivGad      p = p :+ KSAccumPNoise :+ Max32BitUnits
+type instance KSPNoise (BaseBGad 2) p = p :+ KSAccumPNoise
 
 type PT2CTMulCtx p m m'map zp gad ctex t z mon =
   PT2CTMulCtx' m zp p gad (PNoise2KSZq gad p) ctex t z mon (Lookup m m'map)
 
 type PT2CTMulCtx' m zp p gad hintzq ctex t z mon m' =
   PT2CTMulCtx'' p gad hintzq ctex t z mon m' (CT m zp (Cyc t m'
-  -- EAC: BUG!/FIXME
-    (PNoise2Zq (Units2PNoise (TotalUnits (PNoise2Units (p :+ M3)))))))
+    (PNoise2Zq (Units2PNoise (TotalUnits (CTPNoise2Units (p :+ MulPNoise)))))))
     (CT m zp (Cyc t m' hintzq))
 
 type PT2CTMulCtx'' p gad hintzq ctex t z mon m' ctin hintct =
   (Lambda ctex, Mul ctex ctin, PreMul ctex ctin ~ ctin, SHE ctex,
-   ModSwitchCtx ctex ctin hintzq, -- zqin -> zq (final modulus)
-   ModSwitchCtx ctex hintct (PNoise2Zq p), -- zqin -> zq (final modulus)
-   KeySwitchQuadCtx ctex hintct gad, -- hint over zqin
+   ModSwitchCtx ctex ctin hintzq,              -- zqin -> hint zq
+   ModSwitchCtx ctex hintct (PNoise2Zq p), -- hint zq -> zq (final modulus)
+   KeySwitchQuadCtx ctex hintct gad,
    KSHintCtx gad t m' z hintzq,
    GenSKCtx t m' z Double,
    Typeable (Cyc t m' z), Typeable (KSQuadCircHint gad (Cyc t m' hintzq)),
@@ -177,15 +173,10 @@ instance (PT2CTMulCtx p m m'map zp gad ctex t z mon)
   => Mul (PT2CT m'map gad z ctex mon) (PNoiseTag p (Cyc t m zp)) where
 
   type PreMul (PT2CT m'map gad z ctex mon) (PNoiseTag p (Cyc t m zp)) =
-    -- EAC: BUG!/FIXME
-    -- Previously: (PNoise2Zq (Units2PNoise (TotalUnits (p :+: N3))))))
-    -- but this asks for the TotalUnits of a PNoise
-    -- Note that this must be fixed in the same way as the problem in PT2CTMulCtx'
-    PNoiseTag (Units2PNoise (TotalUnits (PNoise2Units (p :+ M3)))) (Cyc t m zp)
+    PNoiseTag (Units2PNoise (TotalUnits (CTPNoise2Units (p :+ MulPNoise)))) (Cyc t m zp)
 
   mul_ :: forall m' env pin hintzq .
-    (-- EAC: BUG! (same as previous two)
-     pin ~ Units2PNoise (TotalUnits (PNoise2Units (p :+ M3))),
+    (pin ~ Units2PNoise (TotalUnits (CTPNoise2Units (p :+ MulPNoise))),
      hintzq ~ PNoise2KSZq gad p,
      m' ~ Lookup m m'map,
      PT2CTMulCtx p m m'map zp gad ctex t z mon) =>
@@ -224,7 +215,7 @@ type PT2CTLinearCtx' ctex mon m'map p t e r s r' s' z zp zq zqin hintzq gad =
    -- output ciphertext type
    CT s zp (Cyc t s' zq)   ~ Cyc2CT m'map (PNoiseTag p (Cyc t s zp)),
    -- input ciphertext type
-   CT r zp (Cyc t r' zqin) ~ Cyc2CT m'map (PNoiseTag (p :+ M1) (Cyc t r zp)),
+   CT r zp (Cyc t r' zqin) ~ Cyc2CT m'map (PNoiseTag (p :+ TunnPNoise) (Cyc t r zp)),
    TunnelCtx ctex t e r s (e * (r' / r)) r' s'   zp hintzq gad,
    TunnelHintCtx       t e r s (e * (r' / r)) r' s' z zp hintzq gad,
    GenSKCtx t r' z Double, GenSKCtx t s' z Double,
@@ -232,47 +223,51 @@ type PT2CTLinearCtx' ctex mon m'map p t e r s r' s' z zp zq zqin hintzq gad =
    ModSwitchCtx ctex (CT s zp (Cyc t s' hintzq))  zq,
    Typeable t, Typeable r', Typeable s', Typeable z)
 
--- multiple LinearCyc instances, one for each type of gad we might use
-
 instance LinearCyc (PT2CT m'map gad z ctex mon) (PNoiseTag p) where
 
-  -- EAC: Danger: as far as GHC is concerned, ('S h) is not the same as (h :+: N1)
   type PreLinearCyc (PT2CT m'map gad z ctex mon) (PNoiseTag p) =
-    PNoiseTag (p :+ M1)
+    PNoiseTag (p :+ TunnPNoise)
 
   type LinearCycCtx (PT2CT m'map gad z ctex mon) (PNoiseTag p) t e r s zp =
     (PT2CTLinearCtx ctex mon m'map p t e r s (Lookup r m'map) (Lookup s m'map)
-      z zp (PNoise2Zq p) (PNoise2Zq (p :+ M1)) gad)
+      z zp (PNoise2Zq p) (PNoise2Zq (p :+ TunnPNoise)) gad)
 
-  linearCyc_ :: forall t zp e r s env expr rp r' s' zq .
-    (expr ~ PT2CT m'map gad z ctex mon, s' ~ Lookup s m'map,
-     PT2CTLinearCtx ctex mon m'map p t e r s (Lookup r m'map) (Lookup s m'map)
-     z zp (PNoise2Zq p) (PNoise2Zq (p :+ M1)) gad,
-     Cyc2CT m'map (PNoiseTag p (Cyc t r zp)) ~ CT r zp (Cyc t r' zq), rp ~ Cyc t r zp)
-      => Linear t zp e r s -> expr env (PNoiseTag (p :+ M1) rp -> PNoiseTag p (Cyc t s zp))
+  linearCyc_ :: forall t zp e r s env expr rp r' s' zq pin .
+    (expr ~ PT2CT m'map gad z ctex mon, s' ~ Lookup s m'map, rp ~ Cyc t r zp,
+     pin ~ (p :+ TunnPNoise),
+     Cyc2CT m'map (PNoiseTag p (Cyc t r zp)) ~ CT r zp (Cyc t r' zq),
+     PT2CTLinearCtx ctex mon m'map p t e r s (Lookup r m'map)
+      (Lookup s m'map) z zp (PNoise2Zq p) (PNoise2Zq pin) gad)
+      => Linear t zp e r s -> expr env (PNoiseTag pin rp -> PNoiseTag p (Cyc t s zp))
   linearCyc_ f = PC $ do
     -- the reader stores r, so run the hint generation with s/sqrt(n)
     hint <- local (svar (Proxy::Proxy s')) $
             getTunnelHint @gad @(PNoise2KSZq gad p) (Proxy::Proxy z) f
     return $ lam $
       modSwitch_ $:    -- then scale back to the target modulus zq
-      (tunnel_ hint $:     -- linear w/ the hint
-        (modSwitch_ $: -- then scale (up) to the hint modulus zq'
-          (v0 :: ctex _ (Cyc2CT m'map (PNoiseTag (p :+ M1) rp)))))
+      (tunnel_ hint $: -- linear w/ the hint
+        (modSwitch_ $: -- scale (up) to the hint modulus zq'
+          (v0 :: ctex _ (Cyc2CT m'map (PNoiseTag pin rp)))))
 
 ----- Type families -----
 
 -- | The number of units a ciphertext with pNoise @p@ must have
-type family PNoise2Units (p :: PNoise) where
-  PNoise2Units ('PN p) = 'Units (p :+: M2)
+type family CTPNoise2Units (p :: PNoise) where
+  CTPNoise2Units ('PN p) = 'Units (p :+: MinUnits)
+
+-- | The number of units a key-switch hint with pNoise @p@ must have
+-- This is different from CTPNoise2Units because the hint coeffients are very small
+-- (~8), while ciphertext coefficients can be much larger.
+type family KSPNoise2Units (p :: PNoise) where
+  KSPNoise2Units ('PN p) = 'Units p
 
 -- | (An upper bound on) the pNoise of a ciphertext whose modulus has
 -- exactly the given number of units
 type family Units2PNoise (h :: Units) where
-  Units2PNoise ('Units h) = 'PN (h :-: M2)
+  Units2PNoise ('Units h) = 'PN (h :-: MinUnits)
 
 -- | The modulus (nested pairs) for a ciphertext with pNoise @p@
-type PNoise2Zq (p :: PNoise) = ZqPairsWithUnits (PNoise2Units p)
+type PNoise2Zq (p :: PNoise) = ZqPairsWithUnits (CTPNoise2Units p)
 
 type family Cyc2CT (m'map :: [(Factored, Factored)]) e = cte | cte -> e where
 
@@ -293,7 +288,6 @@ type family Cyc2CT (m'map :: [(Factored, Factored)]) e = cte | cte -> e where
     (TypeError ('Text "Type family 'Cyc2CT' can't convert type '"
                 ':<>: 'ShowType c ':<>: 'Text "'."
                 ':$$: 'Text "It only converts types of the form 'PNoiseTag p (Cyc t m zp) and pairs/lists/functions thereof."))
-
 
 -- type-level map lookup
 type family Lookup m (map :: [(Factored, Factored)]) where
@@ -327,3 +321,23 @@ type M21 = 'S M20
 type M22 = 'S M21
 type M23 = 'S M22
 type M24 = 'S M23
+
+-- PNoise constants
+
+-- | Amount by which pNoise decreases during a key switch (gadget-independent)
+type KSAccumPNoise = $(mkTypeNat $ ceiling $ 12 / pNoiseUnit)
+
+-- | Maximum number of units in a 32-bit modulus; used to compute the pNoise
+-- of a key switch hint with TrivGad
+type Max32BitUnits = $(mkTypeNat $ ceiling $ 30.5 / pNoiseUnit)
+
+-- | Amount by which pNoise decreases from a multiplication
+-- (multiplication costs about 18 bits)
+type MulPNoise = $(mkTypeNat $ ceiling $ 18 / pNoiseUnit)
+
+-- | Number of modulus units required to correctly decrypt a ciphertext with
+-- zero pNoise. A ciphertext with zero pNoise has absolute noise ~2000.
+type MinUnits = $(mkTypeNat $ ceiling $ 12 / pNoiseUnit)
+
+-- | Amount by which pNoise decreases from a ring tun
+type TunnPNoise = $(mkTypeNat $ ceiling $ 6 / pNoiseUnit)
