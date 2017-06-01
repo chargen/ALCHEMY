@@ -27,6 +27,7 @@ library
                    Crypto.Alchemy.Interpreter.ErrorRateWriter
                    Crypto.Alchemy.Interpreter.Eval
                    Crypto.Alchemy.Interpreter.KeysHints
+                   Crypto.Alchemy.Interpreter.Params
                    Crypto.Alchemy.Interpreter.PT2CT
                    Crypto.Alchemy.Interpreter.PT2CT.Noise
                    Crypto.Alchemy.Interpreter.Print
@@ -36,11 +37,14 @@ library
                    Crypto.Alchemy.Language.Lambda
                    Crypto.Alchemy.Language.List
                    Crypto.Alchemy.Language.Monad
+                   Crypto.Alchemy.Language.Pair
                    Crypto.Alchemy.Language.SHE
-                   Crypto.Alchemy.Language.TunnelCyc
+                   Crypto.Alchemy.Language.String
+                   Crypto.Alchemy.Language.LinearCyc
                    Crypto.Alchemy.MonadAccumulator
 
   build-depends: base >= 4.7 && < 5
+               , constraints
                , lol >= 0.5
                , lol-apps >= 0.1
                , MonadRandom
@@ -56,15 +60,20 @@ executable alchemy-arithmetic
   default-language: Haskell2010
   main-is: Arithmetic.hs
   ghc-options: -main-is Arithmetic
+  other-modules: Common, LinearDec2CRT
 
   ghc-options: -rtsopts
 
   build-depends:
     alchemy,
     base >= 4.9 && < 4.10,
+    deepseq,
     lol,
     lol-cpp,
+    MonadRandom,
     mtl,
+    numeric-prelude,
+    time,
     type-natural
 
 executable alchemy-homomrlwr
@@ -90,14 +99,19 @@ executable alchemy-tunnel
   default-language: Haskell2010
   main-is:          Tunnel.hs
   ghc-options: -main-is Tunnel
+  other-modules: Common, LinearDec2CRT
 
   ghc-options: -rtsopts
 
   build-depends:
     alchemy,
     base >= 4.9 && < 4.10,
+    deepseq,
     lol,
     lol-cpp,
+    MonadRandom,
     mtl,
     numeric-prelude,
+    singletons,
+    time,
     type-natural

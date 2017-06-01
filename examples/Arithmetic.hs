@@ -19,7 +19,6 @@ import Control.Monad.Reader
 import Control.Monad.Writer
 
 import Crypto.Alchemy.MonadAccumulator
---import Crypto.Alchemy.Interpreter.DedupRescale
 import Crypto.Alchemy.Interpreter.Depth
 import Crypto.Alchemy.Interpreter.Dup
 import Crypto.Alchemy.Interpreter.ErrorRateWriter
@@ -40,7 +39,6 @@ import Crypto.Lol.Cyclotomic.Tensor.CPP
 import Control.Applicative
 import Control.Monad.Random
 import Data.Maybe
-import Data.Type.Natural
 
 -- EAC: We can get rid of signatures once #13524 is fixed (should be in 8.2)
 
@@ -66,28 +64,36 @@ type M = F512
 type M'Map = '[ '(F4, M) ]
 --type Zqs = '[Zq $(mkTLNatNat 268440577), Zq $(mkTLNatNat 8392193), Zq $(mkTLNatNat 1073750017)] -- ,1073753089)]
 
-           -- indexed by Units: '(Mod :: *, MaxUnits :: Nat, TotalUnits :: Units)
-type Zqs = '[ '(Zq 268440577,                               N4, 'Units N4),   -- 0 units
-              '(Zq 268440577,                               N4, 'Units N4),   -- 1 units
-              '(Zq 268440577,                               N4, 'Units N4),   -- 2 units
-              '(Zq 268440577,                               N4, 'Units N4),   -- 3 units
-              '(Zq 268440577,                               N4, 'Units N4),   -- 4 units
-              '((Zq 8392193,Zq 268440577),                  N4, 'Units N7),   -- 5 units
-              '((Zq 8392193,Zq 268440577),                  N4, 'Units N7),   -- 6 units
-              '((Zq 8392193,Zq 268440577),                  N4, 'Units N7),   -- 7 units
-              '((Zq 1073750017, (Zq 8392193,Zq 268440577)), N4, 'Units N11),   -- 8 units
-              '((Zq 1073750017, (Zq 8392193,Zq 268440577)), N4, 'Units N11),   -- 9 units
-              '((Zq 1073750017, (Zq 8392193,Zq 268440577)), N4, 'Units N11),  -- 10 units
-              '((Zq 1073750017, (Zq 8392193,Zq 268440577)), N4, 'Units N11)]  -- 11 units
 
-  -- @'[Zq $(mkTLNatNat 1312235009), Zq $(mkTLNatNat 37633) ] -- (still) fails with TrivGad
-  -- @'[Zq $(mkTLNatNat 268440577), Zq $(mkTLNatNat 36353)]
-   --, Zq $(mkTLNatNat 36353), Zq $(mkTLNatNat 37633) ] --  (still) fails with TrivGad
-  -- @'[Zq $(mkTLNatNat 268440577), Zq $(mkTLNatNat 65537)] succeeded with TrivGad, even before changes
-  -- @'[Zq $(mkTLNatNat 36097), Zq $(mkTLNatNat 36353), Zq $(mkTLNatNat 37633) ] -- succeeds with TrivGad
-  -- @'[Zq $(mkTLNatNat 16777731), Zq $(mkTLNatNat 36101) ] -- bad moduli (30.3 bits) = huge error, even after addition
-  -- @'[Zq $(mkTLNatNat 536870917), Zq $(mkTLNatNat 36101) ]  -- bad moduli = huge error, *only* after mul! (after addition, it's still 10^-5)
-  -- @'[Zq $(mkTLNatNat 36101), Zq $(mkTLNatNat 36355), Zq $(mkTLNatNat 37635) ] -- bad modulus, but works fine?
+type Z1 = Zq 268440577
+type Z2 = (Zq 8392193,Z1)
+type Z3 = (Zq 1073750017,Z2)
+
+type instance UnitsToModulus ('Units N0) = Z1
+type instance UnitsToModulus ('Units N1) = Z1
+type instance UnitsToModulus ('Units N2) = Z1
+type instance UnitsToModulus ('Units N3) = Z1
+type instance UnitsToModulus ('Units N4) = Z1
+type instance UnitsToModulus ('Units N5) = Z2
+type instance UnitsToModulus ('Units N6) = Z2
+type instance UnitsToModulus ('Units N7) = Z2
+type instance UnitsToModulus ('Units N8) = Z3
+type instance UnitsToModulus ('Units N9) = Z3
+type instance UnitsToModulus ('Units N10) = Z3
+type instance UnitsToModulus ('Units N11) = Z3
+
+type instance TotalUnits ('Units N0) = 'Units N4
+type instance TotalUnits ('Units N1) = 'Units N4
+type instance TotalUnits ('Units N2) = 'Units N4
+type instance TotalUnits ('Units N3) = 'Units N4
+type instance TotalUnits ('Units N4) = 'Units N4
+type instance TotalUnits ('Units N5) = 'Units N7
+type instance TotalUnits ('Units N6) = 'Units N7
+type instance TotalUnits ('Units N7) = 'Units N7
+type instance TotalUnits ('Units N8) = 'Units N11
+type instance TotalUnits ('Units N9) = 'Units N11
+type instance TotalUnits ('Units N10) = 'Units N11
+type instance TotalUnits ('Units N11) = 'Units N11
 
 main :: IO ()
 main = do
@@ -104,7 +110,7 @@ main = do
 
   -- EAC: can remove type sig and use ptexpr as the argument to pt2ct below (which infers the signature),
   -- but this requires compiling PT2CT which takes a long time.
-  let ptexpr = addMul @(PNoiseTag ('PN 'Z) (Cyc CT F4 (Zq 7))) ::  PT2CT' M'Map Zqs TrivGad _
+  let ptexpr = addMul @(PNoiseTag ('PN N0) (Cyc CT F4 (Zq 7))) ::  PT2CT' M'Map TrivGad _
   putStrLn $ "PT expression params:\n" ++ params ptexpr addMul
 
   evalKeysHints (8.0 :: Double) $ do
@@ -112,10 +118,9 @@ main = do
     -- compile the un-applied function to CT, then print it out
     x <- argToReader (pt2ct
            @M'Map
-           @Zqs
            @TrivGad -- (BaseBGad 2)
            @Int64)
-           (addMul @(PNoiseTag ('PN 'Z) (Cyc CT F4 (Zq 7))))
+           (addMul @(PNoiseTag ('PN N0) (Cyc CT F4 (Zq 7))))
 
     -- duplicate the compiled expression
     let (z1,z2) = dup x

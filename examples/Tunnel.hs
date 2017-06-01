@@ -16,20 +16,13 @@
 
 module Tunnel where
 
-import Algebra.Additive as Additive (C(..))
-import qualified Algebra.Ring as Ring (C(..))
 import Control.Monad.Identity
 import Control.Monad.IO.Class
-import Control.Monad.Reader
 import Control.Monad.Random
 import Control.Monad.Writer
-import Data.Type.Natural
 
 import Common
 import LinearDec2CRT
-import Crypto.Alchemy.MonadAccumulator
---import Crypto.Alchemy.Interpreter.DedupRescale
-import Crypto.Alchemy.Interpreter.Depth
 import Crypto.Alchemy.Interpreter.Dup
 import Crypto.Alchemy.Interpreter.ErrorRateWriter
 import Crypto.Alchemy.Interpreter.Eval
@@ -38,18 +31,61 @@ import Crypto.Alchemy.Interpreter.Params
 import Crypto.Alchemy.Interpreter.Print
 import Crypto.Alchemy.Interpreter.PT2CT
 import Crypto.Alchemy.Interpreter.PT2CT.Noise
-import Crypto.Alchemy.Interpreter.Size
+import Crypto.Alchemy.MonadAccumulator
 
 import Crypto.Lol hiding (Pos(..))
 import Crypto.Lol.Cyclotomic.Tensor.CPP
-import Crypto.Lol.Types
 
 type Gad = BaseBGad 2
-type Zqs = '[ Zq $(mkTLNatNat 537264001),
-              Zq $(mkTLNatNat 539360641),
-              Zq $(mkTLNatNat 539884801),
-              Zq $(mkTLNatNat 540933121),
-              Zq $(mkTLNatNat 541457281) ] -- good moduli, ~ 30 bits
+
+type Z1 = Zq 1520064001
+type Z2 = (Zq 3144961, Z1)
+type Z3 = (Zq 5241601, Z2)
+type Z4 = (Zq 7338241, Z3)
+type Z5 = (Zq 1522160641, Z4)
+type Z6 = (Zq 1529498881, Z5)
+
+type instance UnitsToModulus ('Units N0) = Z1
+type instance UnitsToModulus ('Units N1) = Z1
+type instance UnitsToModulus ('Units N2) = Z1
+type instance UnitsToModulus ('Units N3) = Z1
+type instance UnitsToModulus ('Units N4) = Z1
+type instance UnitsToModulus ('Units N5) = Z1
+type instance UnitsToModulus ('Units N6) = Z2
+type instance UnitsToModulus ('Units N7) = Z2
+type instance UnitsToModulus ('Units N8) = Z2
+type instance UnitsToModulus ('Units N9) = Z3
+type instance UnitsToModulus ('Units N10) = Z3
+type instance UnitsToModulus ('Units N11) = Z3
+type instance UnitsToModulus ('Units N12) = Z4
+type instance UnitsToModulus ('Units N13) = Z4
+type instance UnitsToModulus ('Units N14) = Z4
+type instance UnitsToModulus ('Units N15) = Z5
+type instance UnitsToModulus ('Units N16) = Z5
+type instance UnitsToModulus ('Units N17) = Z5
+type instance UnitsToModulus ('Units N18) = Z5
+type instance UnitsToModulus ('Units N19) = Z5
+
+type instance TotalUnits ('Units N0) = 'Units N5
+type instance TotalUnits ('Units N1) = 'Units N5
+type instance TotalUnits ('Units N2) = 'Units N5
+type instance TotalUnits ('Units N3) = 'Units N5
+type instance TotalUnits ('Units N4) = 'Units N5
+type instance TotalUnits ('Units N5) = 'Units N5
+type instance TotalUnits ('Units N6) = 'Units N8
+type instance TotalUnits ('Units N7) = 'Units N8
+type instance TotalUnits ('Units N8) = 'Units N8
+type instance TotalUnits ('Units N9) = 'Units N11
+type instance TotalUnits ('Units N10) = 'Units N11
+type instance TotalUnits ('Units N11) = 'Units N11
+type instance TotalUnits ('Units N12) = 'Units N14
+type instance TotalUnits ('Units N13) = 'Units N14
+type instance TotalUnits ('Units N14) = 'Units N14
+type instance TotalUnits ('Units N15) = 'Units N19
+type instance TotalUnits ('Units N16) = 'Units N19
+type instance TotalUnits ('Units N17) = 'Units N19
+type instance TotalUnits ('Units N18) = 'Units N19
+type instance TotalUnits ('Units N19) = 'Units N19
 
 main :: IO ()
 main = do
@@ -61,7 +97,7 @@ main = do
   putStrLn $ show $ eval exp2a 2
 
 
-  let ptexpr = linear2 @CT @H0 @H1 @H2 @(Zq PP8) @(PNoise 'Z) Proxy :: PT2CT' RngList Zqs Gad _
+  let ptexpr = linear2 @CT @H0 @H1 @H2 @(Zq PP8) @(PNoiseTag ('PN N0)) Proxy :: PT2CT' RngList Gad _
   --let ptexpr = linear5 @CT @'[H0,H1,H2,H3,H4,H5] @(Zq PP8) @(PNoise 'Z) Proxy
   putStrLn $ "PT expression params:\n" ++ (params ptexpr $ linear2 @_ @_ @H1 Proxy)
 
@@ -71,10 +107,9 @@ main = do
   evalKeysHints 8.0 $ do
     y <- argToReader (pt2ct
          @RngList
-         @Zqs
          @Gad
          @Int64)
-         (linear2 @CT @H0 @H1 @H2 @(Zq PP8) @(PNoise 'Z) Proxy)
+         (linear2 @CT @H0 @H1 @H2 @(Zq PP8) @(PNoiseTag ('PN N0)) Proxy)
          --(tunn5 @CT @'[H0,H1,H2,H3,H4,H5] @(Zq PP8) @(PNoise 'Z) Proxy)
     -- compile once, interpret with multiple ctexprs!!
     let (z1,z2) = dup y
