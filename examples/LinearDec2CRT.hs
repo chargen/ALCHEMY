@@ -35,15 +35,15 @@ linear5 :: forall t rngs a postTunnelPNoise env expr h0 h1 h2 h3 h4 h5 preTunnel
   (-- tunnel
    rngs ~ '[h0,h1,h2,h3,h4,h5],
    LinearChainCtx expr t postTunnelPNoise a rngs,
-   PreLinearChainM expr postTunnelPNoise rngs ~ preTunnelPNoise)
+   PreLinearCycChain expr postTunnelPNoise rngs ~ preTunnelPNoise)
   => Proxy rngs -> expr env (preTunnelPNoise (Cyc t h0 a) -> postTunnelPNoise (Cyc t h5 a))
 linear5 _ = linearDecToCRT_ .: linearDecToCRT_ @h4 .:
     linearDecToCRT_ @h3 .: linearDecToCRT_ @h2 .: linearDecToCRT_ @h1
 
 -- given the output 'm' (Cyc wrapper) of a chain of tunnels, returns the input Cyc wrapper.
-type family PreLinearChainM expr m (rngs :: [Factored]) where
-  PreLinearChainM expr m '[x] = m
-  PreLinearChainM expr m (r ': rngs) = PreLinearChainM expr (PreLinearCyc expr m) rngs
+type family PreLinearCycChain expr m (rngs :: [Factored]) where
+  PreLinearCycChain expr m '[x] = m
+  PreLinearCycChain expr m (r ': rngs) = PreLinearCycChain expr (PreLinearCyc expr m) rngs
 
 -- | Context for a chaini of tunnels using the decToCRT linear function.
 type LinearChainCtx expr m t z2k (rngs :: [Factored]) = LinearChainCtx' expr m t z2k (Reverse rngs)

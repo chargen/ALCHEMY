@@ -21,9 +21,6 @@ module Crypto.Alchemy.Interpreter.PT2CT
 ( PT2CT, PNoiseTag, PNoise2Zq
 , pt2ct, encrypt, decrypt
 , KSPNoise
-, M0,M1,M2,M3,M4,M5,M6,M7,M8,M9
-, M10,M11,M12,M13,M14,M15,M16,M17,M18,M19
-, M20,M21,M22,M23,M24
 ) where
 
 import Control.Applicative
@@ -138,7 +135,7 @@ instance (SHE ctex, Applicative mon,
 
   mulLit_ (PTag a) = PC $ pure $ mulPublic_ a
 
-type PNoise2KSZq gad p = ZqPairsWithUnits (KSPNoise2Units (KSPNoise gad p))
+type PNoise2KSZq gad p = UnitsToModulus (KSPNoise2Units (KSPNoise gad p))
 
 
 -- The pNoise for the key-switch hint depends on the gadget:
@@ -267,7 +264,7 @@ type family Units2PNoise (h :: Units) where
   Units2PNoise ('Units h) = 'PN (h :-: MinUnits)
 
 -- | The modulus (nested pairs) for a ciphertext with pNoise @p@
-type PNoise2Zq (p :: PNoise) = ZqPairsWithUnits (CTPNoise2Units p)
+type PNoise2Zq (p :: PNoise) = UnitsToModulus (CTPNoise2Units p)
 
 type family Cyc2CT (m'map :: [(Factored, Factored)]) e = cte | cte -> e where
 
@@ -296,48 +293,22 @@ type family Lookup m (map :: [(Factored, Factored)]) where
   Lookup a '[] =
     TypeError ('Text "Could not find " ':<>: 'ShowType a ':$$: 'Text " in a map Lookup.")
 
-type M0 = 'Z
-type M1 = 'S M0
-type M2 = 'S M1
-type M3 = 'S M2
-type M4 = 'S M3
-type M5 = 'S M4
-type M6 = 'S M5
-type M7 = 'S M6
-type M8 = 'S M7
-type M9 = 'S M8
-type M10 = 'S M9
-type M11 = 'S M10
-type M12 = 'S M11
-type M13 = 'S M12
-type M14 = 'S M13
-type M15 = 'S M14
-type M16 = 'S M15
-type M17 = 'S M16
-type M18 = 'S M17
-type M19 = 'S M18
-type M20 = 'S M19
-type M21 = 'S M20
-type M22 = 'S M21
-type M23 = 'S M22
-type M24 = 'S M23
-
 -- PNoise constants
 
 -- | Amount by which pNoise decreases during a key switch (gadget-independent)
-type KSAccumPNoise = $(mkTypeNat $ ceiling $ 12 / pNoiseUnit)
+type KSAccumPNoise = $(natType $ ceiling $ 12 / pNoiseUnit)
 
 -- | Maximum number of units in a 32-bit modulus; used to compute the pNoise
 -- of a key switch hint with TrivGad
-type Max32BitUnits = $(mkTypeNat $ ceiling $ 30.5 / pNoiseUnit)
+type Max32BitUnits = $(natType $ ceiling $ 30.5 / pNoiseUnit)
 
 -- | Amount by which pNoise decreases from a multiplication
 -- (multiplication costs about 18 bits)
-type MulPNoise = $(mkTypeNat $ ceiling $ 18 / pNoiseUnit)
+type MulPNoise = $(natType $ ceiling $ 18 / pNoiseUnit)
 
 -- | Number of modulus units required to correctly decrypt a ciphertext with
 -- zero pNoise. A ciphertext with zero pNoise has absolute noise ~2000.
-type MinUnits = $(mkTypeNat $ ceiling $ 12 / pNoiseUnit)
+type MinUnits = $(natType $ ceiling $ 12 / pNoiseUnit)
 
 -- | Amount by which pNoise decreases from a ring tun
-type TunnPNoise = $(mkTypeNat $ ceiling $ 6 / pNoiseUnit)
+type TunnPNoise = $(natType $ ceiling $ 6 / pNoiseUnit)

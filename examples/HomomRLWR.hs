@@ -17,7 +17,7 @@
 
 module HomomRLWR where
 
-import Crypto.Lol hiding (Pos(..))
+import Crypto.Lol
 import Crypto.Lol.Cyclotomic.Tensor.CPP
 import Crypto.Lol.Types
 
@@ -39,16 +39,12 @@ import Crypto.Alchemy.Interpreter.PT2CT.Noise
 import Crypto.Alchemy.Interpreter.RescaleTree
 import Crypto.Alchemy.Interpreter.Size
 import Crypto.Alchemy.Language.Arithmetic
-import Crypto.Alchemy.Language.Lambda
+import Crypto.Alchemy.Language.Lambda hiding (s)
 import Crypto.Alchemy.Language.LinearCyc
 
-import Control.Monad.Identity
 import Control.Monad.Random
-import Control.Monad.Reader
 import Control.Monad.State
 import Control.Monad.Writer
-import Data.Type.Natural --hiding (Nat(S))
-import qualified Data.Type.Natural as TN
 
 type K = P3
 type Gad = TrivGad
@@ -61,311 +57,120 @@ type Z4 = (Zq 7338241, Z3)
 type Z5 = (Zq 1522160641, Z4)
 type Z6 = (Zq 1529498881, Z5)
 
-type instance MaxUnits ('Units M0) = M5
-type instance MaxUnits ('Units M1) = M5
-type instance MaxUnits ('Units M2) = M5
-type instance MaxUnits ('Units M3) = M5
-type instance MaxUnits ('Units M4) = M5
-type instance MaxUnits ('Units M5) = M5
-type instance MaxUnits ('Units M6) = M5
-type instance MaxUnits ('Units M7) = M5
-type instance MaxUnits ('Units M8) = M5
-type instance MaxUnits ('Units M9) = M5
-type instance MaxUnits ('Units M10) = M5
-type instance MaxUnits ('Units M11) = M5
-type instance MaxUnits ('Units M12) = M5
-type instance MaxUnits ('Units M13) = M5
-type instance MaxUnits ('Units M14) = M5
-type instance MaxUnits ('Units M15) = M5
-type instance MaxUnits ('Units M16) = M5
-type instance MaxUnits ('Units M17) = M5
-type instance MaxUnits ('Units M18) = M5
-type instance MaxUnits ('Units M19) = M5
+type instance UnitsToModulus ('Units N0) = Z1
+type instance UnitsToModulus ('Units N1) = Z1
+type instance UnitsToModulus ('Units N2) = Z1
+type instance UnitsToModulus ('Units N3) = Z1
+type instance UnitsToModulus ('Units N4) = Z1
+type instance UnitsToModulus ('Units N5) = Z1
+type instance UnitsToModulus ('Units N6) = Z2
+type instance UnitsToModulus ('Units N7) = Z2
+type instance UnitsToModulus ('Units N8) = Z2
+type instance UnitsToModulus ('Units N9) = Z3
+type instance UnitsToModulus ('Units N10) = Z3
+type instance UnitsToModulus ('Units N11) = Z3
+type instance UnitsToModulus ('Units N12) = Z4
+type instance UnitsToModulus ('Units N13) = Z4
+type instance UnitsToModulus ('Units N14) = Z4
+type instance UnitsToModulus ('Units N15) = Z5
+type instance UnitsToModulus ('Units N16) = Z5
+type instance UnitsToModulus ('Units N17) = Z5
+type instance UnitsToModulus ('Units N18) = Z5
+type instance UnitsToModulus ('Units N19) = Z5
 {-
-type instance MaxUnits ('Units M20) = M5
-type instance MaxUnits ('Units M21) = M5
-type instance MaxUnits ('Units M22) = M5
-type instance MaxUnits ('Units M23) = M5
-type instance MaxUnits ('Units M24) = M5
+type instance UnitsToModulus ('Units N20) = Z6
+type instance UnitsToModulus ('Units N21) = Z6
+type instance UnitsToModulus ('Units N22) = Z6
+type instance UnitsToModulus ('Units N23) = Z6
+type instance UnitsToModulus ('Units N24) = Z6
 -}
 
-type instance ZqPairsWithUnits ('Units M0) = Z1
-type instance ZqPairsWithUnits ('Units M1) = Z1
-type instance ZqPairsWithUnits ('Units M2) = Z1
-type instance ZqPairsWithUnits ('Units M3) = Z1
-type instance ZqPairsWithUnits ('Units M4) = Z1
-type instance ZqPairsWithUnits ('Units M5) = Z1
-type instance ZqPairsWithUnits ('Units M6) = Z2
-type instance ZqPairsWithUnits ('Units M7) = Z2
-type instance ZqPairsWithUnits ('Units M8) = Z2
-type instance ZqPairsWithUnits ('Units M9) = Z3
-type instance ZqPairsWithUnits ('Units M10) = Z3
-type instance ZqPairsWithUnits ('Units M11) = Z3
-type instance ZqPairsWithUnits ('Units M12) = Z4
-type instance ZqPairsWithUnits ('Units M13) = Z4
-type instance ZqPairsWithUnits ('Units M14) = Z4
-type instance ZqPairsWithUnits ('Units M15) = Z5
-type instance ZqPairsWithUnits ('Units M16) = Z5
-type instance ZqPairsWithUnits ('Units M17) = Z5
-type instance ZqPairsWithUnits ('Units M18) = Z5
-type instance ZqPairsWithUnits ('Units M19) = Z5
+type instance TotalUnits ('Units N0) = 'Units N5
+type instance TotalUnits ('Units N1) = 'Units N5
+type instance TotalUnits ('Units N2) = 'Units N5
+type instance TotalUnits ('Units N3) = 'Units N5
+type instance TotalUnits ('Units N4) = 'Units N5
+type instance TotalUnits ('Units N5) = 'Units N5
+type instance TotalUnits ('Units N6) = 'Units N8
+type instance TotalUnits ('Units N7) = 'Units N8
+type instance TotalUnits ('Units N8) = 'Units N8
+type instance TotalUnits ('Units N9) = 'Units N11
+type instance TotalUnits ('Units N10) = 'Units N11
+type instance TotalUnits ('Units N11) = 'Units N11
+type instance TotalUnits ('Units N12) = 'Units N14
+type instance TotalUnits ('Units N13) = 'Units N14
+type instance TotalUnits ('Units N14) = 'Units N14
+type instance TotalUnits ('Units N15) = 'Units N19
+type instance TotalUnits ('Units N16) = 'Units N19
+type instance TotalUnits ('Units N17) = 'Units N19
+type instance TotalUnits ('Units N18) = 'Units N19
+type instance TotalUnits ('Units N19) = 'Units N19
 {-
-type instance ZqPairsWithUnits ('Units M20) = Z6
-type instance ZqPairsWithUnits ('Units M21) = Z6
-type instance ZqPairsWithUnits ('Units M22) = Z6
-type instance ZqPairsWithUnits ('Units M23) = Z6
-type instance ZqPairsWithUnits ('Units M24) = Z6
+type instance TotalUnits ('Units N20) = 'Units N24
+type instance TotalUnits ('Units N21) = 'Units N24
+type instance TotalUnits ('Units N22) = 'Units N24
+type instance TotalUnits ('Units N23) = 'Units N24
+type instance TotalUnits ('Units N24) = 'Units N24
 -}
 
-type instance TotalUnits ('Units M0) = 'Units M5
-type instance TotalUnits ('Units M1) = 'Units M5
-type instance TotalUnits ('Units M2) = 'Units M5
-type instance TotalUnits ('Units M3) = 'Units M5
-type instance TotalUnits ('Units M4) = 'Units M5
-type instance TotalUnits ('Units M5) = 'Units M5
-type instance TotalUnits ('Units M6) = 'Units M8
-type instance TotalUnits ('Units M7) = 'Units M8
-type instance TotalUnits ('Units M8) = 'Units M8
-type instance TotalUnits ('Units M9) = 'Units M11
-type instance TotalUnits ('Units M10) = 'Units M11
-type instance TotalUnits ('Units M11) = 'Units M11
-type instance TotalUnits ('Units M12) = 'Units M14
-type instance TotalUnits ('Units M13) = 'Units M14
-type instance TotalUnits ('Units M14) = 'Units M14
-type instance TotalUnits ('Units M15) = 'Units M19
-type instance TotalUnits ('Units M16) = 'Units M19
-type instance TotalUnits ('Units M17) = 'Units M19
-type instance TotalUnits ('Units M18) = 'Units M19
-type instance TotalUnits ('Units M19) = 'Units M19
-{-
-type instance TotalUnits ('Units M20) = 'Units M24
-type instance TotalUnits ('Units M21) = 'Units M24
-type instance TotalUnits ('Units M22) = 'Units M24
-type instance TotalUnits ('Units M23) = 'Units M24
-type instance TotalUnits ('Units M24) = 'Units M24
--}
-
--- k = 4 => PN N9
--- k = 3 => PN N6
--- k = 2 => PN N3
+homomRLWR_5hop :: forall t rngs k outputPNoise env z2k expr z2 h0 h1 h2 h3 h4 h5 preTunnelPNoise postTunnelPNoise .
+  (z2 ~ Z2E 'O,
+   -- tunnel
+   rngs ~ '[h0,h1,h2,h3,h4,h5],
+   LinearChainCtx expr t postTunnelPNoise z2k rngs,
+   PreLinearCycChain expr postTunnelPNoise rngs ~ preTunnelPNoise,
+   -- rescaleCycCRT
+   PreRescaleTreePow2 expr k (outputPNoise (Cyc t h5 z2)) ~ postTunnelPNoise (Cyc t h5 z2k),
+   RescaleTreePow2Ctx expr k (outputPNoise (Cyc t h5 z2)))
+  => Proxy rngs -> Tagged k (expr env (preTunnelPNoise (Cyc t h0 z2k) -> outputPNoise (Cyc t h5 z2)))
+homomRLWR_5hop rngs = do
+  rescaleTree <- rescaleTreePow2_ @(outputPNoise (Cyc t h5 z2))
+  return $ rescaleTree .: linear5 rngs
 
 main :: IO ()
 main = do
 
-  putStrLn "RescaleTree:"
-  let (ex01,ex02) = dup $ untag $ rescaleTreePow2_ @(PNoiseTag ('PN M0) (Cyc CT H5 (ZqBasic PP2 Int64))) @K
-  putStrLn $ "PT RescaleTree: " ++ pprint ex01
-  putStrLn $ "PT RescaleTree size: " ++ show (size ex02)
+  putStrLn "HomomRLWR:"
+  let (ex21,ex22) = dup $ untag $ homomRLWR_5hop @CT @PTRngs @K @(PNoiseTag ('PN N0)) Proxy
+  putStrLn $ "PT RLWR: " ++ pprint ex21
+  putStrLn $ "PT RLWR size: " ++ show (size ex22)
 
-  -- EAC: can remove type sig and use ptexpr as the argument to pt2ct below (which infers the signature),
-  -- but this requires compiling PT2CT which takes a long time.
-  let (ptrescale :: PT2CT' RescaleM'Map Gad _, paramsexpr1) = dup $ untag $ rescaleTreePow2_ @(PNoiseTag ('PN M0) (Cyc CT H5 (ZqBasic PP2 Int64))) @K
-  putStrLn $ "PT expression params:\n" ++ params ptrescale paramsexpr1
-
-  putStrLn "Tunnel:"
-  -- EAC: 'Z noise is important here so that we can print the composition of P expr
-  let (ex11,ex12) = dup $ linear5 @CT @PTRngs @(Z2E K) @(PNoiseTag ('PN M0)) Proxy
-  putStrLn $ "PT Tunnel: " ++ pprint ex11
-  putStrLn $ "PT Tunnel size: " ++ show (size ex12)
-
-  -- EAC: This needs to have a non-zero output pNoise level!!
-  -- EAC: can remove type sig and use ptexpr as the argument to pt2ct below (which infers the signature),
-  -- but this requires compiling PT2CT which takes a long time.
-  let (pttunnel :: PT2CT' CTRngs Gad _, paramsexpr2) = dup $ linear5 @CT @PTRngs @(Z2E K) @(PNoiseTag ('PN M6)) Proxy
-  putStrLn $ "PT expression params:\n" ++ params pttunnel paramsexpr2
-
-  putStrLn $ "PT Composition: " ++ pprint (ex01 .: ex11)
-  putStrLn $ "PT Composition size:" ++ show (size (ex02 .: ex12))
+  -- EAC: Could remove the type sig from ptrlwr and let it be inferred from the use of pt2ct below
+  -- however, compiling the evalKeysHints block takes a long time, so it's convenient
+  -- to comment it out and compile just the PT expression components faster.
+  let (ptrlwr :: PT2CT' CTRngs Gad _, paramsexpr2) = dup $ untag $ homomRLWR_5hop @CT @PTRngs @K @(PNoiseTag ('PN N0)) Proxy
+  putStrLn $ "PT expression params:\n" ++ params ptrlwr paramsexpr2
 {-
   -- compile the un-applied function to CT, then print it out
   evalKeysHints 8.0 $ do
 
-    roundTree <- timeIO "Compiling rounding tree..." $
+    rlwr <- timeIO "Compiling RLWR..." $
                    argToReader (pt2ct
-                    @RescaleM'Map
-                    @Zqs
+                    @CTRngs
                     @Gad
                     @Int64)
-                    (untag $ rescaleTreePow2_ @(PNoiseTag ('PN N0) (Cyc CT H5 (ZqBasic PP2 Int64))) @K)
+                    --ptrlwr
+                    (dup $ untag $ homomRLWR_5hop @CT @PTRngs @K @(PNoiseTag ('PN N0)) Proxy)
 
-    tunn <- timeIO "Compiling tunnel sequence..." $
-               argToReader (pt2ct
-                  @CTRngs
-                  @Zqs
-                  @Gad
-                  @Int64)
-                  (linear5 @CT @PTRngs @(Z2E K) @(PNoiseTag ('PN N9)) Proxy)
+    let (r1,r)  = dup rlwr
+        (r2,s)  = dup r
+        (r3,t)  = dup s
+        (r4,r5) = dup t
 
-    let (r1,r)  = dup roundTree
-        (r2,r') = dup r
-        (r3,r'') = dup r'
-        (r4,r5) = dup r''
-        (s1,s)  = dup tunn
-        (s2,s') = dup s
-        (s3,s'') = dup s'
-        (s4,s5) = dup s''
-
-    liftIO $ putStrLn "CT Tunneling:"
-    liftIO $ putStrLn $ pprint s1
-    liftIO $ putStrLn $ params s1 s2
-    liftIO $ putStrLn $ "Size: " ++ (show $ size s5)
-
-    liftIO $ putStrLn "CT Rounding Tree:"
+    liftIO $ putStrLn "Homom RLWR:"
     liftIO $ putStrLn $ pprint r1
     liftIO $ putStrLn $ params r1 r2
     liftIO $ putStrLn $ "Size: " ++ (show $ size r5)
-
-    liftIO $ putStrLn "CT Composition:"
-    liftIO $ putStrLn $ pprint (r1 .: s1)
-    liftIO $ putStrLn $ "Size: " ++ (show $ size (r5 .: s5))
 
     ptin <- liftIO $ getRandom
     arg1 <- argToReader encrypt ptin
 
     timeIO "Evaluating with error rates..." $ do
       f <- readerToAccumulator $ writeErrorRates @Int64 @() r3
-      g <- readerToAccumulator $ writeErrorRates @Int64 @() s3
-      let (_,errors) = runWriter $ eval (f .: g) (return arg1)
+      let (_,errors) = runWriter $ eval f (return arg1)
       liftIO $ print errors
 
-    _ <- time "Evaluating without error rates..." $ eval (r4 .: s4) arg1
+    _ <- time "Evaluating without error rates..." $ eval r4 arg1
 
     liftIO $ putStrLn "Done."
-
--}
-
-
-{-
-
-    -- example with rescale de-duplication when tunneling
-  -- print the unapplied PT function
-
-  putStrLn $ pprint $ untag $ khprf_0hop @CT @H0 @P3 @Identity @Int64
-  let (ex01,ex0) = dup $ untag $ khprf_0hop @CT @H0 @P3 @(PNoise 'Z) @Int64
-      (ex02,ex03) = dup ex0
-  putStrLn $ "PT expression0: " ++ pprint ex01
-  putStrLn $ "PT expression0 size: " ++ (show $ size ex02)
-  putStrLn $ "PT expression0 depth: " ++ (show $ depth ex03)
-
-  putStrLn $ pprint $ untag $ khprf_1hop @CT @H4 @H0 @P2 @Identity @Int64
-  let (ex11,ex1) = dup $ untag $ khprf_1hop @CT @H4 @H0 @P2 @(PNoise 'Z) @Int64
-      (ex12,ex13) = dup ex1
-  putStrLn $ "PT expression1: " ++ pprint ex11
-  putStrLn $ "PT expression1 size: " ++ (show $ size ex12)
-  putStrLn $ "PT expression1 depth: " ++ (show $ depth ex13)
-
-  putStrLn $ pprint $ untag $ khprf_1hop' @CT @H0 @H1 @P3 @(PNoise 'Z) @Int64
-  putStrLn $ pprint $ untag $ khprf_1hop' @CT @H0 @H1 @P3 @Identity @Int64
-  putStrLn $ pprint $ untag $ khprf_1hop'' @CT @H0 @H1 @P3 @(PNoise 'Z) @Int64
-  putStrLn $ pprint $ untag $ khprf_1hop'' @CT @H0 @H1 @P3 @Identity @Int64
-  putStrLn $ pprint $ untag $ khprf_5hop @CT @'[H0,H1,H2,H3,H4,H5] @P3 @Identity @Int64 Proxy
-
-
-  -- EAC: It's terrible that we can't use Dup here: PreDiv2 P and PreDiv2 E disagree
-  putStrLn $ pprint $ untag $ khprf_5hop @CT @'[H0,H1,H2,H3,H4,H5] @P3 @(PNoise 'Z) @Int64 Proxy
-  putStrLn $ show $ eval (untag $ khprf_5hop @CT @'[H0,H1,H2,H3,H4,H5] @P3 @(PNoise 'Z) @Int64 Proxy) 2
-
-    tunn <- argToReader (pt2ct
-                         @RngList
-                         @ZqList
-                         @TrivGad
-                         @Int64)
-                         --(rescale4to2 @CT @H0 @(PNoise 'Z)) -- 1 minute, 8 sec
-                         (untag $ khprf_0hop @CT @H0 @P2 @(PNoise 'Z) @Int64)
-                         --(rescale4to2 @CT @H5 @(PNoise 'Z)) -- 1 minute, 8 sec
-                         --(untag $ khprf_1hop @CT @H4 @H5 @P3 @(PNoise 'Z) @Int64)
-                         --(untag $ khprf_5hop @CT @'[H0,H1,H2,H3,H4,H5] @P3 @(PNoise 'Z) @Int64 Proxy)
-
-
-
-
-
-
-    y <- argToReader (pt2ct
-                         @'[ '(H0,H0)]
-                         @ZqList
-                         @TrivGad
-                         @Int64
-                         @Double)
-                         --(rescale4to2 @CT @H0 @(PNoise 'Z)) -- 1 minute, 8 sec
-                         (untag $ khprf_0hop @CT @H0 @P2 @(PNoise 'Z) @Int64) -- 1 minute, 6 sec
-                         --(untag $ khprf_1hop @CT @H4 @H5 @P3 @(PNoise 'Z) @Int64)
-                         --(untag $ khprf_5hop @CT @'[H0,H1,H2,H3,H4,H5] @P3 @(PNoise 'Z) @Int64 Proxy)
-    -- compile once, interpret with multiple ctexprs!!
-
-    let (z1,z2) = dup y
-    liftIO $ putStrLn $ pprint z1
-    z2' <- readerToAccumulator $ writeErrorRates @Int64 @() z2
-    let (z2'',errors) = runWriter $ eval z2' $ return 2
-    liftIO $ putStrLn $ show z2''
-    liftIO $ print errors
-    --liftIO $ putStrLn $ pprint $ dedupRescale z2
--}
-
-
-
-
-{-
-khprf_5hop :: forall t rngs k outputPNoise i env z2k expr z2 h0 h1 h2 h3 h4 h5 preTunnelPNoise postTunnelPNoise .
-  (z2 ~ Z2E 'O i,
-   -- tunnel
-   rngs ~ '[h0,h1,h2,h3,h4,h5],
-   TunnelChainCtx expr t postTunnelPNoise z2k rngs,
-   PreTunnelM expr postTunnelPNoise rngs ~ preTunnelPNoise,
-   -- rescaleCycCRT
-   PreRescaleTreePow2 expr k (outputPNoise (Cyc t h5 z2)) ~ postTunnelPNoise (Cyc t h5 z2k),
-   RescaleTreePow2Ctx expr k (outputPNoise (Cyc t h5 z2)))
-  => Proxy rngs -> Tagged k (expr env (preTunnelPNoise (Cyc t h0 z2k) -> outputPNoise (Cyc t h5 z2)))
-khprf_5hop rngs = do
-  rescaleTree <- rescaleTreePow2_ @(outputPNoise (Cyc t h5 z2))
-  return $ rescaleTree .: tunn5 rngs
-
--- khprf_1hop', but without point-free style
-khprf_1hop'' :: forall t h4 h5 k outputPNoise i env z2k expr z2 postTunnelPNoise preTunnelPNoise rngs .
-  (z2 ~ Z2E 'O i,
-    -- tunnel
-   rngs ~ '[h4,h5], TunnelChainCtx expr t postTunnelPNoise z2k rngs,
-   PreTunnelM expr postTunnelPNoise rngs ~ preTunnelPNoise,
-   -- rescaleCycCRT
-   PreRescaleTreePow2 expr k (outputPNoise (Cyc t h5 z2)) ~ postTunnelPNoise (Cyc t h5 z2k),
-   RescaleTreePow2Ctx expr k (outputPNoise (Cyc t h5 z2)))
-  => Tagged k (expr env (preTunnelPNoise (Cyc t h4 z2k) -> outputPNoise (Cyc t h5 z2)))
-khprf_1hop'' = do
-  rescaleTree <- rescaleTreePow2_ @(outputPNoise (Cyc t h5 z2))
-  return $ lam $ rescaleTree $: (tunnelDecToCRT_ $: v0)
-
--- khprf_1hop, but with generalized tunneling constraints
-khprf_1hop' :: forall t h4 h5 k outputPNoise i env z2k expr z2 postTunnelPNoise preTunnelPNoise rngs .
-  (z2 ~ Z2E 'O i,
-    -- tunnel
-   rngs ~ '[h4,h5], TunnelChainCtx expr t postTunnelPNoise z2k rngs,
-   PreTunnelM expr postTunnelPNoise rngs ~ preTunnelPNoise,
-   -- rescaleCycCRT
-   PreRescaleTreePow2 expr k (outputPNoise (Cyc t h5 z2)) ~ postTunnelPNoise (Cyc t h5 z2k),
-   RescaleTreePow2Ctx expr k (outputPNoise (Cyc t h5 z2)))
-  => Tagged k (expr env (preTunnelPNoise (Cyc t h4 z2k) -> outputPNoise (Cyc t h5 z2)))
-khprf_1hop' = do
-  rescaleTree <- rescaleTreePow2_ @(outputPNoise (Cyc t h5 z2))
-  return $ rescaleTree .: tunnelDecToCRT_
-
-khprf_1hop :: forall t h4 h5 k outputPNoise i env z2k expr z2 postTunnelPNoise preTunnelPNoise .
-  (z2 ~ Z2E 'O i, Lambda expr,
-    -- tunnel
-   TunnelDecToCRTCtx expr postTunnelPNoise t h4 h5 z2k,
-   PreTunnelCyc expr postTunnelPNoise ~ preTunnelPNoise,
-   -- rescaleCycCRT
-   PreRescaleTreePow2 expr k (outputPNoise (Cyc t h5 z2)) ~ postTunnelPNoise (Cyc t h5 z2k),
-   RescaleTreePow2Ctx expr k (outputPNoise (Cyc t h5 z2)))
-  => Tagged k (expr env (preTunnelPNoise (Cyc t h4 z2k) -> outputPNoise (Cyc t h5 z2)))
-khprf_1hop = do
-  rescaleTree <- rescaleTreePow2_ @(outputPNoise (Cyc t h5 z2))
-  return $ rescaleTree .: tunnelDecToCRT_
-
-khprf_0hop :: forall t h5 k outputPNoise i z2k env expr z2 postTunnelPNoise .
-  (z2 ~ Z2E 'O i, Lambda expr,
-   -- rescaleCycCRT
-   PreRescaleTreePow2 expr k (outputPNoise (Cyc t h5 z2)) ~ postTunnelPNoise (Cyc t h5 z2k),
-   RescaleTreePow2Ctx expr k (outputPNoise (Cyc t h5 z2)))
-  => Tagged k (expr env (postTunnelPNoise (Cyc t h5 z2k) -> outputPNoise (Cyc t h5 z2)))
-khprf_0hop = rescaleTreePow2_
 -}
