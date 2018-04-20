@@ -20,7 +20,6 @@ import Control.Monad.Writer
 
 import Crypto.Alchemy.MonadAccumulator
 --import Crypto.Alchemy.Interpreter.DedupRescale
-import Crypto.Alchemy.Interpreter.Depth
 import Crypto.Alchemy.Interpreter.Dup
 import Crypto.Alchemy.Interpreter.ErrorRateWriter
 import Crypto.Alchemy.Interpreter.Eval
@@ -28,7 +27,7 @@ import Crypto.Alchemy.Interpreter.KeysHints
 import Crypto.Alchemy.Interpreter.Params
 import Crypto.Alchemy.Interpreter.Print
 import Crypto.Alchemy.Interpreter.PT2CT
-import Crypto.Alchemy.Interpreter.PT2CT.Noise
+import Crypto.Alchemy.Interpreter.PT2CT
 import Crypto.Alchemy.Interpreter.Size
 
 import Crypto.Alchemy.Language.Arithmetic
@@ -82,7 +81,6 @@ main = do
   putStrLn $ "PT expression: " ++ pprint addMul
 
   putStrLn $ "PT expression size: " ++ show (size addMul)
-  putStrLn $ "Expression depth: "   ++ show (depth addMul)
   -- evaluate a DSL function to a Haskell function, then apply to arguments
   pt1 <- getRandom
   pt2 <- getRandom

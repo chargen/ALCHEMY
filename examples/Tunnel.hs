@@ -27,13 +27,13 @@ import Common
 
 type Gad = BaseBGad 2
 
-type M'Map = '[ '(H0,H0')
-              , '(H1,H1')
-              , '(H2,H2')
-              , '(H3,H3')
-              , '(H4,H4')
-              , '(H5,H5')
-              ]
+data M'Map
+type instance CTIndex M'Map H0 = H0'
+type instance CTIndex M'Map H1 = H1'
+type instance CTIndex M'Map H2 = H2'
+type instance CTIndex M'Map H3 = H3'
+type instance CTIndex M'Map H4 = H4'
+type instance CTIndex M'Map H5 = H5'
 
 type Zqs = '[ Zq $(mkTLNatNat 537264001)
             , Zq $(mkTLNatNat 539360641)
