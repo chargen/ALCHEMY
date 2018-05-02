@@ -1,11 +1,21 @@
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE Rank2Types #-}
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE Rank2Types            #-}
+{-# LANGUAGE TypeFamilies          #-}
+{-# LANGUAGE TypeOperators         #-}
+{-# LANGUAGE UndecidableInstances  #-}
 
 module Crypto.Alchemy.Language.Lambda where
+
+newtype (i # j) a = Comp { unComp :: i (j a) }
+
+instance (Functor i, Functor j) => Functor (i # j) where
+  fmap f x = Comp $ (f <$>) <$> unComp x
+
+instance (Applicative i, Applicative j) => Applicative (i # j) where
+  pure x = Comp $ pure $ pure x
+  --f <*> x
 
 -- | Symantics for functions and application.
 
